@@ -42,7 +42,6 @@ public class IDGenerator {
             if (p instanceof Student) {
                 ids.add(((Student) p).getStudentId());
             }
-            ids.add(p.getUserId());
         }
         // %04d -> integer, min 4 digits, pad with zeros on left
         return String.format("STD-%04d", extractMaxNumeric(ids) + 1);
@@ -52,7 +51,7 @@ public class IDGenerator {
         ArrayList<String> ids = new ArrayList<>();
         for (User p : DataStore.getInstance().getUsers()) {
             if (p instanceof Staff) {
-                ids.add(((Staff) p).getUserId());
+                ids.add(((Staff) p).getStaffId());
             }
         }
         // %04d -> integer, min 4 digits, pad with zeros on left

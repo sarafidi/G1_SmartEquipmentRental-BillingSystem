@@ -1,4 +1,4 @@
-package strategy;
+package model.strategy;
 
 import model.equipment.Equipment;
 import model.user.User;

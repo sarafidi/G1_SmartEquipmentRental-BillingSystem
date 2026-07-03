@@ -1,9 +1,10 @@
 package model.bill;
 
-import model.RentalSystemFacade;
 import model.rental.Rental;
 import model.rental.RentalManager;
-import strategy.*;
+import model.strategy.DiscountedPricing;
+import model.strategy.PenaltyRule;
+import model.strategy.PricingStrategy;
 import util.DataStore;
 import util.IDGenerator;
 

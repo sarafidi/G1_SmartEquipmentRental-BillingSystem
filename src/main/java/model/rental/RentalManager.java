@@ -2,8 +2,9 @@ package model.rental;
 
 import model.RentalStatus;
 import model.equipment.Equipment;
+import model.strategy.PenaltyRule;
+import model.strategy.PricingStrategy;
 import model.user.User;
-import strategy.*;
 import util.DataStore;
 import util.IDGenerator;
 

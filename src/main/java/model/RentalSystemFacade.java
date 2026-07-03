@@ -6,9 +6,12 @@ import model.equipment.Equipment;
 import model.equipment.EquipmentManager;
 import model.rental.Rental;
 import model.rental.RentalManager;
+import model.strategy.DamagePenalty;
+import model.strategy.DiscountedPricing;
+import model.strategy.LatePenalty;
+import model.strategy.PenaltyRule;
 import model.user.User;
 import model.user.UserManager;
-import strategy.*;
 
 import java.util.ArrayList;
 import java.util.List;
