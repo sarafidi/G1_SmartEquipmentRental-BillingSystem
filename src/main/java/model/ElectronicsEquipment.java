@@ -10,7 +10,7 @@ public class ElectronicsEquipment extends Equipment {
 
     @Override
     public double calculateRentalFee(int days) {
-        return this.getDailyRate() * days;
+        return getDailyRate() * days;
     }
 
     public int getWarrantyMonths() {

@@ -12,7 +12,7 @@ public class MediaEquipment extends Equipment {
 
     @Override
     public double calculateRentalFee(int days) {
-        return (this.getDailyRate() * days) + (requiresDeposit ? depositAmount : 0);
+        return (getDailyRate() * days) + (requiresDeposit ? depositAmount : 0);
     }
 
     public boolean isRequiresDeposit() {

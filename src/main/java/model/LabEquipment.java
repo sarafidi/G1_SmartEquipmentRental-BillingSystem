@@ -12,7 +12,7 @@ public class LabEquipment extends Equipment {
 
     @Override
     public double calculateRentalFee(int days) {
-        double base = this.getDailyRate() * days;
+        double base = getDailyRate() * days;
         if (hazardLevel > 2) {
             base += 50.00; // flat safety handling surcharge
         }
