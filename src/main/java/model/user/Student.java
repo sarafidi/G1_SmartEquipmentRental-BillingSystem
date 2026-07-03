@@ -1,4 +1,6 @@
-package model;
+package model.user;
+
+import model.UserType;
 
 public class Student extends User {
     private String studentId;

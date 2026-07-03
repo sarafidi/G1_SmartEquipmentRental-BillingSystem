@@ -1,4 +1,4 @@
-package model;
+package model.equipment;
 
 public class LabEquipment extends Equipment {
     private int hazardLevel;

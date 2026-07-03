@@ -1,4 +1,4 @@
-package model;
+package model.equipment;
 
 public abstract class Equipment {
     // fields are private. subclasses use getters to retrieve them

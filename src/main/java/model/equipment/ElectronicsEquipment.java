@@ -1,4 +1,4 @@
-package model;
+package model.equipment;
 
 public class ElectronicsEquipment extends Equipment {
     private int warrantyMonths;

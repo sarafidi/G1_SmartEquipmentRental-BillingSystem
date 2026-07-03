@@ -1,4 +1,4 @@
-package model;
+package model.equipment;
 
 public class MediaEquipment extends Equipment {
     private boolean requiresDeposit;

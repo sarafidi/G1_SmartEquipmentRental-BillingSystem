@@ -1,4 +1,6 @@
-package model;
+package model.user;
+
+import model.UserType;
 
 public class Staff extends User {
     private String staffId;

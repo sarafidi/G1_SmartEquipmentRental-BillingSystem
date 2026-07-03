@@ -1,4 +1,6 @@
-package model;
+package model.user;
+
+import model.UserType;
 
 public abstract class User {
     // encapsulation decision: marked private to prevent direct external modification
