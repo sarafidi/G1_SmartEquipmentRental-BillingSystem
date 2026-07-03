@@ -8,7 +8,9 @@ import model.rental.Rental;
 import model.rental.RentalManager;
 import model.user.User;
 import model.user.UserManager;
+import strategy.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RentalSystemFacade {
@@ -21,9 +23,20 @@ public class RentalSystemFacade {
 
     public RentalSystemFacade() {
         this.equipmentManager = new EquipmentManager();
-        this.rentalManager = new RentalManager();
+
+        // define initial rules and strategy at system config layer
+        // inject these into their subsystems to enforce loose coupling
+        List<PenaltyRule> initialRules = new ArrayList<>();
+        initialRules.add(new LatePenalty(10.00));   // default: RM10/day late fee
+        initialRules.add(new DamagePenalty());  // default: damage surcharge rule
+        this.rentalManager = new RentalManager(new DiscountedPricing(), initialRules);
+
         this.billingManager = new BillingManager();
         this.userManager = new UserManager();
+
+        // dependency injection. wires subsystems tgt during startup
+        // to avoid circular singleton calls
+        this.billingManager.setRentalManager(this.rentalManager);
     }
     
     // singleton access point for controllers

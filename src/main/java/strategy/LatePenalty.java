@@ -1,6 +1,6 @@
 package strategy;
 
-import model.Rental;
+import model.rental.Rental;
 
 public class LatePenalty implements PenaltyRule {
     private final double penaltyRatePerDay;

@@ -1,4 +1,4 @@
-package model;
+package model.bill;
 
 import java.time.LocalDate;
 
@@ -77,12 +77,12 @@ public class Bill {
             return this;
         }
 
-        public Builder setDiscountAmount(double discountAmount) {
+        public Builder discountAmount(double discountAmount) {
             this.discountAmount = discountAmount;
             return this;
         }
 
-        public Builder setPenaltyAmount(double penaltyAmount) {
+        public Builder penaltyAmount(double penaltyAmount) {
             this.penaltyAmount = penaltyAmount;
             return this;
         }

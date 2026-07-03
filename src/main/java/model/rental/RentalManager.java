@@ -1,5 +1,6 @@
-package model;
+package model.rental;
 
+import model.RentalStatus;
 import model.equipment.Equipment;
 import model.user.User;
 import strategy.*;
@@ -16,12 +17,10 @@ public class RentalManager {
     private List<PenaltyRule> penaltyRules;
     private final DataStore instance = DataStore.getInstance();
 
-    public RentalManager() {
-        this.rentals = instance.getRental();
-        this.pricingStrategy = new DiscountedPricing();
-        this.penaltyRules = new ArrayList<>();
-        this.penaltyRules.add(new LatePenalty(10.00));      // default RM10 per day overdue
-        this.penaltyRules.add(new DamagePenalty());      // default damage surplus
+    public RentalManager(PricingStrategy initialStrategy, List<PenaltyRule> initialRules) {
+        this.rentals = instance.getRentals();
+        this.pricingStrategy = initialStrategy;
+        this.penaltyRules = initialRules;
     }
 
     public Rental createRental(User user, Equipment equipment, int days) {

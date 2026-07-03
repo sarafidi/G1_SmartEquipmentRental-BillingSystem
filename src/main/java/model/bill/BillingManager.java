@@ -1,5 +1,8 @@
-package model;
+package model.bill;
 
+import model.RentalSystemFacade;
+import model.rental.Rental;
+import model.rental.RentalManager;
 import strategy.*;
 import util.DataStore;
 import util.IDGenerator;
@@ -7,31 +10,38 @@ import util.IDGenerator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BillManager {
+public class BillingManager {
     private List<Bill> bills;
+    private RentalManager rentalManager;    // injected reference
     private final DataStore instance = DataStore.getInstance();
 
-    public BillManager() {
+    public BillingManager() {
         this.bills = instance.getBills();
+    }
+
+    // setter for dependency injection
+    public void setRentalManager (RentalManager rentalManager) {
+        this.rentalManager = rentalManager;
     }
 
     public Bill generateBill(Rental rental) {
         String billId = IDGenerator.generateBillId();   // auto generate bill id
 
-        // select pricing strategy dynamically at runtime based on user's role
-        // TODO: REDO to make it dynamic
-        PricingStrategy pricing = new DiscountedPricing();
+        // get active pricing strategy directly from injected
+        PricingStrategy pricing = (rentalManager != null)
+                ? rentalManager.getPricingStrategy()
+                : new DiscountedPricing();
 
         // 1. base fee and discount calc
         double baseFee = pricing.calculateFee(rental.getEquipment(), rental.getDaysRented());
         double discount = pricing.applyDiscount(rental.getUser(), baseFee);
 
-        // 2. calculate penalties
+        // 2. fetch penalties from RentalManager rules context calculate penalties
         double totalPenalty = 0.0;
         // TODO: update to work dynamic
-        List<PenaltyRule> rules = new ArrayList<>();
-        rules.add(new LatePenalty(10.00));
-        rules.add(new DamagePenalty());
+        List<PenaltyRule> rules = (rentalManager != null)
+                ? rentalManager.getPenaltyRules()
+                : new ArrayList<>();
 
         for (PenaltyRule rule : rules) {
             totalPenalty += rule.computePenalty(rental);

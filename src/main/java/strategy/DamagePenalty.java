@@ -1,6 +1,6 @@
 package strategy;
 
-import model.Rental;
+import model.rental.Rental;
 
 public class DamagePenalty implements PenaltyRule {
     @Override

@@ -2,8 +2,8 @@ package util;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import model.Bill;
-import model.Rental;
+import model.bill.Bill;
+import model.rental.Rental;
 import model.equipment.Equipment;
 import model.user.User;
 
@@ -13,7 +13,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -168,19 +167,19 @@ public class DataStore {
     }
 
     // getters
-    public ArrayList<User> getUser() {
+    public ArrayList<User> getUsers() {
         return users;
     }
 
-    public ArrayList<Equipment> getEquipment() {
+    public ArrayList<Equipment> getEquipments() {
         return equipments;
     }
 
-    public ArrayList<Rental> getRental() {
+    public ArrayList<Rental> getRentals() {
         return rentals;
     }
 
-    public ArrayList<Bill> getBill() {
+    public ArrayList<Bill> getBills() {
         return bills;
     }
 

@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 public class EquipmentManager {
     private List<Equipment> equipmentList;
 
-    public EquipmentManager(List<Equipment> equipmentList) {
+    public EquipmentManager() {
         // load in-memory list stored from JSON by DataStore
-        this.equipmentList = DataStore.getInstance().getEquipment();
+        this.equipmentList = DataStore.getInstance().getEquipments();
     }
 
     public Equipment findById(String id) {
@@ -19,6 +19,11 @@ public class EquipmentManager {
                 .filter(e -> e.getEquipmentId().equalsIgnoreCase(id))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public void addEquipment(Equipment e) {
+        equipmentList.add(e);
+        DataStore.getInstance().saveEquipment();
     }
 
     public void removeEquipment(String id) {

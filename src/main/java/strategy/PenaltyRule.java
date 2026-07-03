@@ -1,6 +1,6 @@
 package strategy;
 
-import model.Rental;
+import model.rental.Rental;
 
 public interface PenaltyRule {
     double computePenalty(Rental rental);

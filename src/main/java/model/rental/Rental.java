@@ -1,5 +1,6 @@
-package model;
+package model.rental;
 
+import model.RentalStatus;
 import model.equipment.Equipment;
 import model.user.User;
 
@@ -57,7 +58,6 @@ public class Rental {
     }
 
     // getters and setters
-
     public String getRentalId() {
         return rentalId;
     }
