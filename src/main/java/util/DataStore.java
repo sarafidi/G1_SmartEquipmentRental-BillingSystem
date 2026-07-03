@@ -2,6 +2,10 @@ package util;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import model.Bill;
+import model.Rental;
+import model.equipment.Equipment;
+import model.user.User;
 
 import java.io.File;
 import java.io.FileReader;
@@ -96,7 +100,7 @@ public class DataStore {
                         JsonObject jsonObject = json.getAsJsonObject();
                         String type = jsonObject.get("type").getAsString();
                         try {
-                            Class<?> clazz = Class.forName("model.", type);
+                            Class<?> clazz = Class.forName("model.equipment", type);
                             return context.deserialize(json, clazz);
                         } catch (ClassNotFoundException e) {
                             throw new JsonParseException("Unknown equipment type: " + type, e);
@@ -117,7 +121,7 @@ public class DataStore {
                         JsonObject jsonObject = json.getAsJsonObject();
                         String type = jsonObject.get("type").getAsString();
                         try {
-                            Class<?> clazz = Class.forName("model.", type);
+                            Class<?> clazz = Class.forName("model.equipment", type);
                             return context.deserialize(json, clazz);
                         } catch (ClassNotFoundException e) {
                             throw new JsonParseException("Unknown equipment type: " + type, e);
@@ -164,19 +168,19 @@ public class DataStore {
     }
 
     // getters
-    public ArrayList<User> getUsers() {
+    public ArrayList<User> getUser() {
         return users;
     }
 
-    public ArrayList<Equipment> getPatients() {
+    public ArrayList<Equipment> getEquipment() {
         return equipments;
     }
 
-    public ArrayList<Rental> getDoctors() {
+    public ArrayList<Rental> getRental() {
         return rentals;
     }
 
-    public ArrayList<Bill> getAppointments() {
+    public ArrayList<Bill> getBill() {
         return bills;
     }
 
