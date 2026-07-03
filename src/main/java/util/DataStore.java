@@ -2,9 +2,11 @@ package util;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import model.UserType;
 import model.bill.Bill;
 import model.rental.Rental;
 import model.equipment.Equipment;
+import model.user.Staff;
 import model.user.User;
 
 import java.io.File;
@@ -154,16 +156,19 @@ public class DataStore {
     }
 
     private void seedAdmin() {
-        // your seed admin code here
-//        String hash = HashUtil.sha256("admin123");
-//        String createdAt = LocalDateTime.now().toString();
-//        User admin = new User(
-//                "USR-0001", "admin", "Admin1",
-//                "", "", hash, Role.ADMIN,
-//                true, true, null, createdAt
-//        );
-//        users.add(admin);
-//        saveUsers();
+        // seed admin code here
+        String hashPassword = HashUtil.sha256("admin123");
+        User admin = new Staff(
+                "USR-001",
+                "System Admin",
+                "admin@gmail.com",
+                hashPassword,
+                IDGenerator.generateStaffId(),
+                "Technical",
+                UserType.ADMIN
+        );
+        users.add(admin);
+        saveUsers();
     }
 
     // getters

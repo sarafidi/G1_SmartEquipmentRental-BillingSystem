@@ -3,6 +3,8 @@ package util;
 import model.bill.Bill;
 import model.rental.Rental;
 import model.equipment.Equipment;
+import model.user.Staff;
+import model.user.Student;
 import model.user.User;
 
 import java.util.ArrayList;
@@ -32,6 +34,29 @@ public class IDGenerator {
         }
         // %04d -> integer, min 4 digits, pad with zeros on left
         return String.format("USR-%04d", extractMaxNumeric(ids) + 1);
+    }
+
+    public static String generateStudentId() {
+        ArrayList<String> ids = new ArrayList<>();
+        for (User p : DataStore.getInstance().getUsers()) {
+            if (p instanceof Student) {
+                ids.add(((Student) p).getStudentId());
+            }
+            ids.add(p.getUserId());
+        }
+        // %04d -> integer, min 4 digits, pad with zeros on left
+        return String.format("STD-%04d", extractMaxNumeric(ids) + 1);
+    }
+
+    public static String generateStaffId() {
+        ArrayList<String> ids = new ArrayList<>();
+        for (User p : DataStore.getInstance().getUsers()) {
+            if (p instanceof Staff) {
+                ids.add(((Staff) p).getUserId());
+            }
+        }
+        // %04d -> integer, min 4 digits, pad with zeros on left
+        return String.format("STF-%04d", extractMaxNumeric(ids) + 1);
     }
 
     public static String generateEquipmentId() {
