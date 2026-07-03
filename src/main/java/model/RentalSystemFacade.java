@@ -24,7 +24,7 @@ public class RentalSystemFacade {
     private final BillingManager billingManager;
     private final UserManager userManager;
 
-    public RentalSystemFacade() {
+    private RentalSystemFacade() {
         this.equipmentManager = new EquipmentManager();
 
         // define initial rules and strategy at system config layer

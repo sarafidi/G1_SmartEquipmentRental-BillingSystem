@@ -21,7 +21,7 @@ public class Bill {
         this.baseRentalFee = builder.baseRentalFee;
         this.discountAmount = builder.discountAmount;
         this.penaltyAmount = builder.penaltyAmount;
-        this.netPayable = builder.computeNet();
+        this.netPayable = Math.max(0.0, builder.baseRentalFee - builder.discountAmount + builder.penaltyAmount);
         this.billDate = LocalDate.now();
     }
 
