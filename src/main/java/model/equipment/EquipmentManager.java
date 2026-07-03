@@ -4,6 +4,7 @@ import util.DataStore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EquipmentManager {
     private List<Equipment> equipmentList;
@@ -14,12 +15,10 @@ public class EquipmentManager {
     }
 
     public Equipment findById(String id) {
-        for (Equipment e : equipmentList) {
-            if (e.getEquipmentId().equalsIgnoreCase(id)) {
-                return e;
-            }
-        }
-        return null;
+        return equipmentList.stream()
+                .filter(e -> e.getEquipmentId().equalsIgnoreCase(id))
+                .findFirst()
+                .orElse(null);
     }
 
     public void removeEquipment(String id) {
@@ -28,13 +27,9 @@ public class EquipmentManager {
     }
 
     public List<Equipment> listAvailable() {
-        List<Equipment> availableList = new ArrayList<>();
-        for (Equipment e : equipmentList) {
-            if (e.isAvailable()) {
-                availableList.add(e);
-            }
-        }
-        return availableList;
+        return equipmentList.stream()
+                .filter(Equipment::isAvailable)
+                .toList();
     }
 
     public List<Equipment> listAll() {
