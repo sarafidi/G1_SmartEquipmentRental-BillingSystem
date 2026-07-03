@@ -275,7 +275,7 @@ public class EquipmentPanel extends JPanel {
                 "Remove " + name + "(" + id + ")?",
                 "Confirm Remove", JOptionPane.YES_NO_OPTION);
 
-        if (confirm == JOptionPane.YES_NO_OPTION) {
+        if (confirm == JOptionPane.YES_OPTION) {
             controller.removeEquipment(id);
             refreshTable();
         }
