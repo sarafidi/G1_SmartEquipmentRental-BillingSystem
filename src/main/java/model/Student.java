@@ -1,0 +1,31 @@
+package model;
+
+public class Student extends User {
+    private String studentId;
+    private int yearOfStudy;
+
+    public Student(String userId, String name, String email, String studentId, int yearOfStudy) {
+        // auto determine if they are a STUDENT or FINAL_YEAR_STUDENT based on study year
+        super(userId, name, email, (yearOfStudy >= 3) ? UserType.FINAL_YEAR_STUDENT : UserType.STUDENT);
+        this.studentId = studentId;
+        this.yearOfStudy = yearOfStudy;
+    }
+
+    @Override
+    public double getDiscountRate() {
+        // students get 10% discount; Final year students (year >= 3) gets 20% discount
+        return isFinalYear() ? 0.20 : 0.10;
+    }
+
+    public boolean isFinalYear() {
+        return yearOfStudy >= 3;
+    }
+
+    public String getStudentId() {
+        return studentId;
+    }
+
+    public int getYearOfStudy() {
+        return yearOfStudy;
+    }
+}
