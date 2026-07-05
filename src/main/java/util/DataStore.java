@@ -101,7 +101,7 @@ public class DataStore {
                         JsonObject jsonObject = json.getAsJsonObject();
                         String type = jsonObject.get("type").getAsString();
                         try {
-                            Class<?> clazz = Class.forName("model.equipment" + type);
+                            Class<?> clazz = Class.forName("model.equipment." + type);
                             return context.deserialize(json, clazz);
                         } catch (ClassNotFoundException e) {
                             throw new JsonParseException("Unknown equipment type: " + type, e);
@@ -122,7 +122,7 @@ public class DataStore {
                         JsonObject jsonObject = json.getAsJsonObject();
                         String type = jsonObject.get("type").getAsString();
                         try {
-                            Class<?> clazz = Class.forName("model.equipment" + type);
+                            Class<?> clazz = Class.forName("model.user." + type);
                             return context.deserialize(json, clazz);
                         } catch (ClassNotFoundException e) {
                             throw new JsonParseException("Unknown equipment type: " + type, e);
