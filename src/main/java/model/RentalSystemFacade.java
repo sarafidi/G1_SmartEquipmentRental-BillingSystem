@@ -12,6 +12,7 @@ import model.strategy.LatePenalty;
 import model.strategy.PenaltyRule;
 import model.user.User;
 import model.user.UserManager;
+import util.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +143,23 @@ public class RentalSystemFacade {
 
     public List<User> listAll() {
         return userManager.listAll();
+    }
+
+    public User login(String userId, String password) {
+        User u = userManager.authenticate(userId, password);
+        if (u == null) return null;
+        SessionManager.getInstance().setCurrentUser(u);
+        return u;
+    }
+
+    public void logout() {
+        // Clear the session
+        SessionManager.getInstance().clearSession();
+    }
+
+    public User getCurrentUser() {
+        // Get currently logged-in user
+        return SessionManager.getInstance().getCurrentUser();
     }
 
     // ===============================================

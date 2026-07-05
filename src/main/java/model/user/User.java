@@ -1,6 +1,7 @@
 package model.user;
 
 import model.UserType;
+import util.HashUtil;
 
 public abstract class User {
     // encapsulation decision: marked private to prevent direct external modification
@@ -48,5 +49,10 @@ public abstract class User {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    // check user password
+    public boolean checkPassword(String rawPassword) {
+        return HashUtil.verify(rawPassword, this.password);
     }
 }

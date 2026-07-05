@@ -33,4 +33,10 @@ public class UserManager {
     public List<User> listAll() {
         return new ArrayList<>(users);
     }
+
+    public User authenticate(String userId, String password) {
+        User u = findById(userId);
+        if (u == null) return null;
+        return u.checkPassword(password) ? u : null;
+    }
 }
