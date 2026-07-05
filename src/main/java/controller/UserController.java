@@ -13,7 +13,7 @@ public class UserController {
 
     public boolean login(String userId, String rawPassword) {
         // Find user by ID
-        User user = facade.findUserById(userId);
+        User user = facade.findById(userId);
 
         // If user not found, return false
         if (user == null) {
@@ -46,17 +46,17 @@ public class UserController {
         if (id.equals("USR-001")) {
             return;
         }
-        facade.deleteUser(id);
+        facade.removeUser(id);
     }
 
     public User findById(String id) {
         // Find user by ID using facade
-        return facade.findUserById(id);
+        return facade.findById(id);
     }
 
     public List<User> listAll() {
         // Get all users using facade
-        return facade.listAllUsers();
+        return facade.listAll();
     }
 
     public User getCurrentUser() {

@@ -41,7 +41,6 @@ public class LoginDialog extends JDialog {
         });
 
         initComponents();
-        setVisible(true);
     }
 
     private void initComponents() {

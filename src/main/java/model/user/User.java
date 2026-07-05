@@ -21,6 +21,9 @@ public abstract class User {
     // abstract: subclass must override to define their unique discount rate
     public abstract double getDiscountRate();
 
+    // abstract: subclass must override to return their unique studentId or staffId
+    public abstract String getCardId();
+
     public String getUserId() {
         return userId;
     }

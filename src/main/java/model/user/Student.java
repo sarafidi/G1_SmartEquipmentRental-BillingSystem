@@ -23,10 +23,12 @@ public class Student extends User {
         return yearOfStudy >= 3;
     }
 
-    public String getStudentId() {
-        return studentId;
-    }
     public int getYearOfStudy() {
         return yearOfStudy;
+    }
+
+    @Override
+    public String getCardId() {
+        return studentId;
     }
 }

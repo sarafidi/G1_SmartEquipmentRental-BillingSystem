@@ -81,4 +81,8 @@ public class BillingManager {
                 .findFirst()
                 .orElse(null);
     }
+
+    public List<Bill> listAll() {
+        return new ArrayList<>(bills);
+    }
 }
