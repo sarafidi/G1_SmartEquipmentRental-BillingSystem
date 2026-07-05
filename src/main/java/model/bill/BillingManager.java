@@ -1,5 +1,9 @@
 package model.bill;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import model.rental.Rental;
 import model.rental.RentalManager;
 import model.strategy.DiscountedPricing;
@@ -7,10 +11,6 @@ import model.strategy.PenaltyRule;
 import model.strategy.PricingStrategy;
 import util.DataStore;
 import util.IDGenerator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class BillingManager {
     private List<Bill> bills;

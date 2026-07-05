@@ -1,5 +1,9 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import model.bill.Bill;
 import model.bill.BillingManager;
 import model.equipment.Equipment;
@@ -12,10 +16,6 @@ import model.strategy.LatePenalty;
 import model.strategy.PenaltyRule;
 import model.user.User;
 import model.user.UserManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class RentalSystemFacade {
     private static RentalSystemFacade instance;

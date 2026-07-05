@@ -1,5 +1,23 @@
 package view;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
 import controller.EquipmentController;
 import model.UserType;
 import model.equipment.ElectronicsEquipment;
@@ -8,10 +26,6 @@ import model.equipment.LabEquipment;
 import model.equipment.MediaEquipment;
 import util.IDGenerator;
 import util.SessionManager;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 
 public class EquipmentPanel extends JPanel {
     private final EquipmentController controller = new EquipmentController();
