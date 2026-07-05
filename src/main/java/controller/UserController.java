@@ -2,41 +2,65 @@ package controller;
 
 import model.RentalSystemFacade;
 import model.user.User;
+import util.HashUtil;
 import util.SessionManager;
 
 import java.util.List;
 
 public class UserController {
+
     private final RentalSystemFacade facade = RentalSystemFacade.getInstance();
 
-    public boolean logic(String userId, String rawPassword) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
-        // Hint: Use HashUtil.verify(rawPassword, storedHash) to authenticate
-        return false;
+    public boolean login(String userId, String rawPassword) {
+        // Find user by ID
+        User user = facade.findUserById(userId);
+
+        // If user not found, return false
+        if (user == null) {
+            return false;
+        }
+
+        // Verify password using HashUtil
+        boolean isValid = HashUtil.verify(rawPassword, user.getPassword());
+
+        // If valid, set current user in SessionManager
+        if (isValid) {
+            SessionManager.getInstance().setCurrentUser(user);
+        }
+
+        return isValid;
     }
 
     public void logout() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
-        // Hint: Use SessionManager clearSession() method
+        // Clear the session
+        SessionManager.getInstance().clearSession();
     }
 
     public void addUser(User user) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
+        // Add user using facade
+        facade.addUser(user);
     }
 
     public void removeUser(String id) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
+        // Don't allow deleting admin account
+        if (id.equals("USR-001")) {
+            return;
+        }
+        facade.deleteUser(id);
     }
 
     public User findById(String id) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
-        // FIX: return type calls facade user methods
-        return null;
+        // Find user by ID using facade
+        return facade.findUserById(id);
     }
 
     public List<User> listAll() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER C
-        // FIX: return type calls facade user methods
-        return null;
+        // Get all users using facade
+        return facade.listAllUsers();
+    }
+
+    public User getCurrentUser() {
+        // Get currently logged in user
+        return SessionManager.getInstance().getCurrentUser();
     }
 }
