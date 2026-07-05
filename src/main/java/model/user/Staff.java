@@ -26,11 +26,12 @@ public class Staff extends User {
         return 0.15;
     }
 
-    public String getStaffId() {
-        return staffId;
-    }
-
     public String getDepartment() {
         return department;
+    }
+
+    @Override
+    public String getCardId() {
+        return staffId;
     }
 }

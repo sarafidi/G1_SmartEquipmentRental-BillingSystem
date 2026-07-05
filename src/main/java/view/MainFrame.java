@@ -13,6 +13,7 @@ public class MainFrame extends JFrame {
     private RentalPanel rentalPanel;
     private BillPanel billPanel;
     private UserPanel userPanel;
+    private ReportPanel reportPanel;
 
     public MainFrame() {
         setTitle("Smart Equipment Rental & Billing System");
@@ -43,6 +44,7 @@ public class MainFrame extends JFrame {
         rentalPanel = new RentalPanel();
         billPanel = new BillPanel();
         userPanel = new UserPanel();
+        reportPanel = new ReportPanel();
 
         tabbedPane.addTab("Equipment", equipmentPanel);
         tabbedPane.addTab("Rentals", rentalPanel);
@@ -52,6 +54,7 @@ public class MainFrame extends JFrame {
         if (SessionManager.getInstance().getCurrentUser().getUserType()
                 == UserType.ADMIN) {
             tabbedPane.addTab("User Management", userPanel);
+            tabbedPane.addTab("Reports", reportPanel);
         }
 
         add(tabbedPane, BorderLayout.CENTER);

@@ -144,4 +144,23 @@ public class RentalSystemFacade {
         return userManager.listAll();
     }
 
+    // ===============================================
+    // REPORT OPERATIONS
+    // ===============================================
+    public List<Bill> listAllBills() {
+        return billingManager.listAll();
+    }
+
+    public List<Rental> getOverdueRentals() {
+        return rentalManager.listAll().stream()
+                .filter(Rental::isOverdue)
+                .toList();
+    }
+
+    public double getTotalRevenue() {
+        return billingManager.listAll().stream()
+                .mapToDouble(Bill::getNetPayable)
+                .sum();
+    }
+
 }

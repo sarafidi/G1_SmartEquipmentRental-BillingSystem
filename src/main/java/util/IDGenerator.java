@@ -40,7 +40,7 @@ public class IDGenerator {
         ArrayList<String> ids = new ArrayList<>();
         for (User p : DataStore.getInstance().getUsers()) {
             if (p instanceof Student) {
-                ids.add(((Student) p).getStudentId());
+                ids.add(p.getCardId());
             }
         }
         // %04d -> integer, min 4 digits, pad with zeros on left
@@ -51,7 +51,7 @@ public class IDGenerator {
         ArrayList<String> ids = new ArrayList<>();
         for (User p : DataStore.getInstance().getUsers()) {
             if (p instanceof Staff) {
-                ids.add(((Staff) p).getStaffId());
+                ids.add(p.getCardId());
             }
         }
         // %04d -> integer, min 4 digits, pad with zeros on left
