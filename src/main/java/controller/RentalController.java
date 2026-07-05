@@ -1,41 +1,43 @@
 package controller;
 
+import java.util.List;
+
 import model.RentalSystemFacade;
 import model.rental.Rental;
-
-import java.util.List;
+import util.Validator;
 
 public class RentalController {
     private final RentalSystemFacade facade = RentalSystemFacade.getInstance();
 
     public Rental rentEquipment(String userId, String equipmentId, int days) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
-        // validate inputs using Validator before calling facade
-
-        // FIX: return type calls facade rental methods
-        return null;
+        if (!Validator.isNonEmpty(userId) || !Validator.isNonEmpty(equipmentId) || !Validator.isValidDays(days)) {
+            throw new IllegalArgumentException("Invalid Input: Please ensure IDs are not empty and days > 0.");
+        }
+        return facade.rentEquipment(userId, equipmentId, days);
     }
 
     public void returnEquipment(String rentalId, String condition) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
-        // condition options: "Excellent", "Good", "Damaged"
+        if (!Validator.isNonEmpty(rentalId) || !Validator.isNonEmpty(condition)) {
+            throw new IllegalArgumentException("Rental ID and equipment condition cannot be empty.");
+        }
+        facade.returnEquipment(rentalId, condition);
     }
 
     public Rental findRentalById(String id) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
-        // FIX: return type calls facade rental methods
-        return null;
+        if (!Validator.isNonEmpty(id)) {
+            return null;
+        }
+        return facade.findRentalById(id);
     }
 
     public List<Rental> getUserRentals(String userId) {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
-        // FIX: return type calls facade
-        return null;
+        if (!Validator.isNonEmpty(userId)) {
+            return List.of();
+        }
+        return facade.getUserRentals(userId);
     }
 
     public List<Rental> listAllRentals() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
-        // FIX: return type calls facade rental methods
-        return null;
+        return facade.listAllRentals();
     }
 }

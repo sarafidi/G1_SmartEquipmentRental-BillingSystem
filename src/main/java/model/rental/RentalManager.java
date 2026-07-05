@@ -11,6 +11,7 @@ import util.IDGenerator;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RentalManager {
     private List<Rental> rentals;
@@ -69,7 +70,7 @@ public class RentalManager {
     public List<Rental> getRentalsByUser(String userId) {
         return rentals.stream()
                 .filter(r -> r.getUser().getUserId().equalsIgnoreCase(userId))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<Rental> listAll() {

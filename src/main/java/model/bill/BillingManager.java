@@ -10,6 +10,7 @@ import util.IDGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BillingManager {
     private List<Bill> bills;
@@ -72,7 +73,7 @@ public class BillingManager {
                     Rental r = findRentalForBill(b.getRentalId());
                     return r != null && r.getUser().getUserId().equalsIgnoreCase(userId);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Rental findRentalForBill(String rentalId) {

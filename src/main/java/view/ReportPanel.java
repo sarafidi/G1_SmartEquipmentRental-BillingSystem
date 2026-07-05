@@ -41,7 +41,7 @@ public class ReportPanel extends JPanel {
         cards.add(makeCard("Total Rentals", String.valueOf(controller.getTotalRentalCount())));
         cards.add(makeCard("Total Revenue", String.format("RM %.2f", controller.getTotalRevenue())));
 
-        JButton downloadBtn = new JButton("⬇️ Download Report (CSV)");
+        JButton downloadBtn = new JButton("Download Report (CSV)");
         downloadBtn.setFont(new Font("Arial", Font.BOLD, 12));
         downloadBtn.addActionListener(e -> onDownloadClick());
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));

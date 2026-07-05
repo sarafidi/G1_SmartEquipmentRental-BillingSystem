@@ -15,6 +15,7 @@ import model.user.UserManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RentalSystemFacade {
     private static RentalSystemFacade instance;
@@ -154,7 +155,7 @@ public class RentalSystemFacade {
     public List<Rental> getOverdueRentals() {
         return rentalManager.listAll().stream()
                 .filter(Rental::isOverdue)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public double getTotalRevenue() {

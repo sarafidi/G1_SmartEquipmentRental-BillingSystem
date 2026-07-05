@@ -34,7 +34,7 @@ public class EquipmentManager {
     public List<Equipment> listAvailable() {
         return equipmentList.stream()
                 .filter(Equipment::isAvailable)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<Equipment> listAll() {

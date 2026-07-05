@@ -148,8 +148,8 @@ public class EquipmentPanel extends JPanel {
 
         // == Row 3: dynamic extra fields by CardLayout ===========================
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addbtn = new JButton("➕ Add Equipment");
-        JButton removebtn = new JButton("🗑️ Remove Selected");
+        JButton addbtn = new JButton("Add Equipment");
+        JButton removebtn = new JButton("Remove Selected");
         addbtn.addActionListener(e -> onAddClick());
         removebtn.addActionListener(e -> onRemoveClick());
         btnRow.add(addbtn);
@@ -176,7 +176,7 @@ public class EquipmentPanel extends JPanel {
                     e.getName(),
                     e.getCategory(),
                     String.format("%.2f", e.getDailyRate()),
-                    e.isAvailable() ? "✅" : "❌"
+                    e.isAvailable() ? "Available" : "Not Available"
             });
         }
     }
@@ -200,7 +200,7 @@ public class EquipmentPanel extends JPanel {
                         e.getName(),
                         e.getCategory(),
                         String.format("%.2f", e.getDailyRate()),
-                        e.isAvailable() ? "✅" : "❌"
+                        e.isAvailable() ? "Available" : "Not Available"
                 });
             }
         }
@@ -218,25 +218,29 @@ public class EquipmentPanel extends JPanel {
                 return;
             }
 
-            Equipment eq = switch (type) {
-                case "Electronics" -> new ElectronicsEquipment(
+            Equipment eq;
+            if ("Electronics".equals(type)) {
+                eq = new ElectronicsEquipment(
                         id, name, rate,
                         Integer.parseInt(warrantyField.getText().trim())
                 );
-                case "Media" -> new MediaEquipment(
+            } else if ("Media".equals(type)) {
+                eq = new MediaEquipment(
                         id, name, rate,
                         depositCheckbox.isSelected(),
                         depositCheckbox.isSelected()
                                 ? Double.parseDouble(depositAmountField.getText().trim())
                                 : 0.0
                 );
-                case "Lab" -> new LabEquipment(
+            } else if ("Lab".equals(type)) {
+                eq = new LabEquipment(
                         id, name, rate,
                         Integer.parseInt(hazardLevelField.getText().trim()),
                         certCheckbox.isSelected()
                 );
-                default -> throw new IllegalArgumentException("Unknown type");
-            };
+            } else {
+                throw new IllegalArgumentException("Unknown type");
+            }
 
             controller.addEquipment(eq);
             refreshTable();
