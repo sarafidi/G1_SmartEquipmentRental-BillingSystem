@@ -1,0 +1,171 @@
+@startuml ManageEquipment
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam stereotypePosition bottom
+
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
+
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           11
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           11
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            11
+}
+
+' ═══════════════════════════════════════════════════
+' PARTICIPANTS — matches visual diagram 4
+' 6 lifelines: EquipmentPanel, EquipmentController,
+'              Facade, EquipmentManager,
+'              Equipment (new obj), DataStore
+' ═══════════════════════════════════════════════════
+box "src/view" #EAF4FB
+  participant "EquipmentPanel" as View <<view>>
+end box
+
+box "src/controller" #EAF7EA
+  participant "EquipmentController" as Ctrl <<controller>>
+end box
+
+box "Design Pattern: Facade" #E3EEF9
+  participant "RentalSystemFacade" as Facade <<Facade>>
+  participant "EquipmentManager" as EqMgr <<model>>
+end box
+
+box "src/model — Equipment" #F5F0FA
+  participant "Electronics/Media/Lab\nEquipment (new)" as EqObj <<domain obj>>
+end box
+
+box "src/util" #F0F0FF
+  participant "DataStore" as DS <<Singleton>>
+end box
+
+' ═══════════════════════════════════════════════════
+' MESSAGE FLOW — matches visual diagram 4
+' ═══════════════════════════════════════════════════
+
+' Step 1 — Admin fills add-equipment form
+View -> Ctrl : onAddEquipmentClick()\n(name, category, rate)
+activate View
+activate Ctrl
+
+' alt: invalid fields
+group alt [invalid fields]
+  Ctrl --> View : show validation error
+end
+
+' Step 2
+Ctrl -> Facade : addEquipment(name, category, rate)
+activate Facade
+
+' Step 3
+Facade -> EqMgr : addEquipment(name, category, rate)
+activate EqMgr
+
+' Step 4 — duplicate check
+note over EqMgr : check duplicate equipmentId
+
+group alt [duplicate ID found]
+  EqMgr --> Facade : return error
+end
+
+' Step 5 — polymorphism: instantiate correct subclass
+EqMgr -> EqObj : new ElectronicsEquipment()\nOR new MediaEquipment()\nOR new LabEquipment()\nbased on category
+activate EqObj
+
+' Step 6
+note over EqObj : set name, dailyRate\nset available = true
+
+' Step 7
+EqObj --> EqMgr : return equipment
+deactivate EqObj
+
+' Step 8
+note over EqMgr : equipmentList.add(equipment)
+
+' Step 9 — persist via Singleton
+EqMgr -> DS : DataStore.getInstance()\n.saveEquipment(equipmentList)
+activate DS
+
+note over DS : Singleton — getInstance()\nguarantees one DataStore\nwriting to equipment.json
+
+DS --> EqMgr : saved
+deactivate DS
+
+' Step 12
+EqMgr --> Facade : return success
+deactivate EqMgr
+
+' Step 13
+Facade --> Ctrl : return success
+deactivate Facade
+
+' Step 14
+Ctrl --> View : return success
+deactivate Ctrl
+
+' Step 15
+note over View : refreshTable()\nshow success message
+deactivate View
+
+' ═══════════════════════════════════════════════════
+' REMOVE EQUIPMENT — same diagram, separate flow
+' ═══════════════════════════════════════════════════
+== Remove equipment (same actors, different path) ==
+
+View -> Ctrl : onRemoveEquipmentClick(equipId)
+activate View
+activate Ctrl
+
+Ctrl -> Facade : removeEquipment(equipId)
+activate Facade
+
+Facade -> EqMgr : removeEquipment(equipId)
+activate EqMgr
+
+note over EqMgr : findById(equipId)
+
+group alt [equipment not found]
+  EqMgr --> Facade : return error
+end
+
+group alt [equipment has ACTIVE rental]
+  EqMgr --> Facade : return error\n(cannot remove while rented)
+end
+
+note over EqMgr : equipmentList.remove(equipment)
+
+EqMgr -> DS : DataStore.getInstance()\n.saveEquipment(equipmentList)
+activate DS
+DS --> EqMgr : saved
+deactivate DS
+
+EqMgr --> Facade : return success
+deactivate EqMgr
+
+Facade --> Ctrl : return success
+deactivate Facade
+
+Ctrl --> View : return success
+deactivate Ctrl
+
+note over View : refreshTable()\nshow success message
+deactivate View
+
+@enduml

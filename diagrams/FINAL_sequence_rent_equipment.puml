@@ -1,0 +1,156 @@
+@startuml RentEquipment
+
+' ═══════════════════════════════════════════════════
+' SKIN & STYLE
+' ═══════════════════════════════════════════════════
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam stereotypePosition bottom
+
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
+
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           11
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           11
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            11
+}
+
+' ═══════════════════════════════════════════════════
+' PARTICIPANTS — exactly matching the visual diagram
+' ═══════════════════════════════════════════════════
+box "src/view" #EAF4FB
+  participant "RentalPanel" as View <<view>>
+end box
+
+box "src/controller" #EAF7EA
+  participant "RentalController" as Ctrl <<controller>>
+end box
+
+box "Design Pattern: Facade" #E3EEF9
+  participant "RentalSystemFacade" as Facade <<Facade>>
+  participant "EquipmentManager"             as EqMgr <<model>>
+  participant "RentalManager"               as RentMgr <<model>>
+end box
+
+box "src/model" #F0FAF0
+  participant "Rental" as Rental <<domain obj>>
+end box
+
+box "src/util" #F0F0FF
+  participant "DataStore" as DS <<Singleton>>
+end box
+
+' ═══════════════════════════════════════════════════
+' MESSAGE FLOW — matches visual diagram step by step
+' ═══════════════════════════════════════════════════
+
+' Step 1
+View -> Ctrl : onRentClick()
+activate View
+activate Ctrl
+
+' Step 2
+Ctrl -> Facade : rentEquipment(userId, equipId, days)
+activate Facade
+
+' alt: invalid input
+group alt [invalid input]
+  Ctrl --> View : show validation error
+end
+
+' Step 3
+Facade -> EqMgr : findById(equipId)
+activate EqMgr
+
+' alt: not available
+group alt [equipment not available]
+  EqMgr --> Facade : return error
+end
+
+' Step 4 (implicit — availability check inside EqMgr)
+note over EqMgr : check available
+
+' Step 5
+EqMgr --> Facade : return equipment
+deactivate EqMgr
+
+|||
+' Step 6
+Facade -> EqMgr : setAvailable(false)
+activate EqMgr
+EqMgr --> Facade : ok
+deactivate EqMgr
+|||
+
+' Step 7
+Facade -> RentMgr : createRental(user, equipment, days)
+activate RentMgr
+
+' Step 8 (implicit inside RentalManager)
+note over RentMgr : select PricingStrategy\n(Standard or Discounted)
+
+' Step 9 — Builder pattern creates Rental
+RentMgr -> Rental : new Rental(user, equipment, days)
+activate Rental
+
+' Step 10
+note over Rental : set status ACTIVE
+
+' Step 11
+Rental --> RentMgr : return rental
+deactivate Rental
+
+|||
+' Step 12 — persist rentals via Singleton
+RentMgr -> DS : DataStore.getInstance()\n.saveRentals(rentals)
+activate DS
+note over DS : write to JSON
+DS --> RentMgr : saved
+deactivate DS
+
+' Step 13
+RentMgr --> Facade : return rental
+deactivate RentMgr
+|||
+
+' Step 14 — persist updated equipment list
+Facade -> EqMgr : saveEquipment(list)
+activate EqMgr
+EqMgr -> DS : DataStore.getInstance()\n.saveEquipment(list)
+activate DS
+note over DS : write to JSON
+DS --> EqMgr : saved
+deactivate DS
+EqMgr --> Facade : saved
+deactivate EqMgr
+
+' Step 15
+Facade --> Ctrl : return rental
+deactivate Facade
+
+' Step 16
+Ctrl --> View : return rental
+deactivate Ctrl
+
+' Step 17
+note over View : refreshTable()\nshow success message
+deactivate View
+
+@enduml
