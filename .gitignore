@@ -38,7 +38,7 @@ build/
 ### Mac OS ###
 .DS_Store
 
-diagrams
+diagrams/DUMMY
 .idea/
 .vscode
 
