@@ -2,9 +2,6 @@ package view;
 
 import controller.UserController;
 import model.user.User;
-import model.user.Student;
-import model.user.Staff;
-import util.IDGenerator;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -195,25 +192,7 @@ public class UserPanel extends JPanel {
             }
         }
 
-        // Generate IDs
-        String userId = IDGenerator.generateUserId();
-        String cardId = userType.equals("Student")
-                ? IDGenerator.generateStudentId()
-                : IDGenerator.generateStaffId();
-
-        // Hash password
-        String hashedPassword = util.HashUtil.sha256(password);
-
-        // Create user object
-        User newUser;
-        if (userType.equals("Student")) {
-            newUser = new Student(userId, name, email, hashedPassword, cardId, Integer.parseInt(additional));
-        } else {
-            newUser = new Staff(userId, name, email, hashedPassword, cardId, additional);
-        }
-
-        // Add user
-        controller.addUser(newUser);
+        String userId = controller.addUser(name, email, password, userType, additional);
 
         JOptionPane.showMessageDialog(this,
                 "User added successfully! User ID: " + userId,

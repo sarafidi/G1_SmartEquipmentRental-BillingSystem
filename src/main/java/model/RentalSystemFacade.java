@@ -123,7 +123,6 @@ public class RentalSystemFacade {
 
     public List<Bill> getBillHistory(String userId) {
         return billingManager.getBillHistory(userId);
-
     }
 
     // ===============================================
@@ -131,6 +130,11 @@ public class RentalSystemFacade {
     // ===============================================
     public void addUser(User user) {
         userManager.addUser(user);
+    }
+
+    public String registerUser(String name, String email, String rawPassword, String userType, String additional) {
+        User newUser = userManager.createUser(name, email, rawPassword, userType, additional);
+        return newUser.getUserId();
     }
 
     public void removeUser(String id) {
@@ -147,8 +151,7 @@ public class RentalSystemFacade {
 
     public User login(String userId, String password) {
         User u = userManager.authenticate(userId, password);
-        if (u == null) return null;
-        SessionManager.getInstance().setCurrentUser(u);
+        if (u != null) SessionManager.getInstance().setCurrentUser(u);
         return u;
     }
 

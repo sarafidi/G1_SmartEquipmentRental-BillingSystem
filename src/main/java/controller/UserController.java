@@ -20,9 +20,9 @@ public class UserController {
         facade.logout();
     }
 
-    public void addUser(User user) {
+    public String addUser(String name, String email, String rawPassword, String userType, String additional) {
         // Add user using facade
-        facade.addUser(user);
+        return facade.registerUser(name, email, rawPassword, userType, additional);
     }
 
     public void removeUser(String id) {
