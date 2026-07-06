@@ -1,29 +1,222 @@
 package view;
 
-import controller.RentalController;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.util.List;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import controller.RentalController;
+import model.rental.Rental;
+import util.SessionManager;
+import util.Validator;
 
 public class RentalPanel extends JPanel {
     private final RentalController controller = new RentalController();
-    private JTable rentalTable;
+    
+    // UI Components for Checkout Form
+    private JTextField txtUserId;
+    private JTextField txtEquipmentId;
     private JTextField daysField;
+    private JButton btnRent;
+
+    // UI Components for Return Form
+    private JTextField txtRentalId;
+    private JComboBox<String> comboCondition;
+    private JButton btnReturn;
+
+    // UI Components for Schedule Table
+    private JTable rentalTable;
+    private DefaultTableModel tableModel;
 
     public RentalPanel() {
-        setLayout(new BorderLayout());
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // ==========================================
+        // 1. FORM PANEL
+        // ==========================================
+        JPanel formsContainer = new JPanel(new GridLayout(1, 2, 20, 0));
+
+        // ---- Form Checkout ----
+        JPanel checkoutPanel = new JPanel(new GridBagLayout());
+        checkoutPanel.setBorder(BorderFactory.createTitledBorder("Equipment Checkout (Rent)"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        checkoutPanel.add(new JLabel("User ID:"), gbc);
+        gbc.gridx = 1;
+        txtUserId = new JTextField(10);
+        checkoutPanel.add(txtUserId, gbc);
+
+        // Autofill current user id
+        try {
+            if (SessionManager.getInstance().getCurrentUser() != null) {
+                txtUserId.setText(SessionManager.getInstance().getCurrentUser().getUserId());
+            }
+        } catch (Exception e) {
+            // Fail silent if no user logged in
+        }
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        checkoutPanel.add(new JLabel("Equipment ID:"), gbc);
+        gbc.gridx = 1;
+        txtEquipmentId = new JTextField(10);
+        checkoutPanel.add(txtEquipmentId, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        checkoutPanel.add(new JLabel("Duration (Days):"), gbc);
+        gbc.gridx = 1;
+        daysField = new JTextField(10);
+        checkoutPanel.add(daysField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        btnRent = new JButton("Checkout Equipment");
+        btnRent.addActionListener(e -> onRentClick());
+        checkoutPanel.add(btnRent, gbc);
+
+        // ---- Form Return ----
+        JPanel returnPanel = new JPanel(new GridBagLayout());
+        returnPanel.setBorder(BorderFactory.createTitledBorder("Equipment Return"));
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.insets = new Insets(5, 5, 5, 5);
+        gbc2.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc2.gridx = 0; gbc2.gridy = 0;
+        returnPanel.add(new JLabel("Rental ID:"), gbc2);
+        gbc2.gridx = 1;
+        txtRentalId = new JTextField(10);
+        returnPanel.add(txtRentalId, gbc2);
+
+        gbc2.gridx = 0; gbc2.gridy = 1;
+        returnPanel.add(new JLabel("Condition:"), gbc2);
+        gbc2.gridx = 1;
+        comboCondition = new JComboBox<>(new String[]{"Excellent", "Good", "Damaged"});
+        returnPanel.add(comboCondition, gbc2);
+
+        gbc2.gridx = 0; gbc2.gridy = 2; gbc2.gridwidth = 2;
+        btnReturn = new JButton("Return Equipment");
+        btnReturn.addActionListener(e -> onReturnClick());
+        returnPanel.add(btnReturn, gbc2);
+
+        // Add both forms to the container
+        formsContainer.add(checkoutPanel);
+        formsContainer.add(returnPanel);
+        add(formsContainer, BorderLayout.NORTH);
+
+        // ==========================================
+        // 2. SCHEDULE TABLE
+        // ==========================================
+        String[] columns = {"Rental ID", "User ID", "Equipment ID", "Days Rented", "Overdue Status"};
+        tableModel = new DefaultTableModel(columns, 0);
+        rentalTable = new JTable(tableModel);
+        
+        // Add selection listener to populate return form when a row is selected
+        rentalTable.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = rentalTable.getSelectedRow();
+            if (selectedRow != -1) {
+                txtRentalId.setText(tableModel.getValueAt(selectedRow, 0).toString());
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(rentalTable);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Active Rentals History & Status"));
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Refresh table data on initialization
+        refreshTable();
     }
 
     public void onRentClick() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
+        String userId = txtUserId.getText().trim();
+        String equipmentId = txtEquipmentId.getText().trim();
+        String daysStr = daysField.getText().trim();
+
+        // Validation checks
+        if (!Validator.isNonEmpty(userId) || !Validator.isNonEmpty(equipmentId) || !Validator.isNonEmpty(daysStr)) {
+            JOptionPane.showMessageDialog(this, "Please fill in all checkout fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            int days = Integer.parseInt(daysStr);
+            if (!Validator.isValidDays(days)) {
+                JOptionPane.showMessageDialog(this, "Rental days must be greater than 0!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Call Controller to process rental
+            Rental rental = controller.rentEquipment(userId, equipmentId, days);
+            if (rental != null) {
+                JOptionPane.showMessageDialog(this, "Rental processing successful! ID: " + rental.getRentalId(), "Success", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+                
+                // Clear checkout form after successful rental
+                txtEquipmentId.setText("");
+                daysField.setText("");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Duration days must be a numeric integer value!", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Checkout Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void onReturnClick() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
+        String rentalId = txtRentalId.getText().trim();
+        String condition = (String) comboCondition.getSelectedItem();
+
+        if (!Validator.isNonEmpty(rentalId)) {
+            JOptionPane.showMessageDialog(this, "Please select or input a valid Rental ID to return!", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            // Call Controller to process return
+            controller.returnEquipment(rentalId, condition);
+            JOptionPane.showMessageDialog(this, "Equipment returned successfully! Invoice/Bill automatically updated.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            refreshTable();
+            
+            // Clear return form after successful return
+            txtRentalId.setText("");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Return Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void refreshTable() {
-        // TODO: TO BE IMPLEMENTED BY MEMBER A
+        // Clear existing rows
+        tableModel.setRowCount(0);
+
+        try {
+            // Fetch active rentals from controller and populate table
+            List<Rental> activeRentals = controller.listAllRentals();
+            for (Rental rental : activeRentals) {
+                Object[] rowData = {
+                    rental.getRentalId(),
+                    rental.getUser().getUserId(),
+                    rental.getEquipment().getEquipmentId(),
+                    rental.getDaysRented(),
+                    rental.isOverdue() ? "OVERDUE" : "ON TIME"
+                };
+                tableModel.addRow(rowData);
+            }
+        } catch (Exception e) {
+            // Fail silently if unable to fetch rentals
+        }
     }
 }

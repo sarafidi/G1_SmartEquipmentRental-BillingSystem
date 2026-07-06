@@ -1,5 +1,10 @@
 package model.rental;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import model.RentalStatus;
 import model.equipment.Equipment;
 import model.strategy.PenaltyRule;
@@ -7,10 +12,6 @@ import model.strategy.PricingStrategy;
 import model.user.User;
 import util.DataStore;
 import util.IDGenerator;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RentalManager {
     private List<Rental> rentals;
@@ -69,7 +70,7 @@ public class RentalManager {
     public List<Rental> getRentalsByUser(String userId) {
         return rentals.stream()
                 .filter(r -> r.getUser().getUserId().equalsIgnoreCase(userId))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<Rental> listAll() {

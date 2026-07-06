@@ -1,10 +1,10 @@
 package model.equipment;
 
-import util.DataStore;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import util.DataStore;
 
 public class EquipmentManager {
     private List<Equipment> equipmentList;
@@ -34,7 +34,7 @@ public class EquipmentManager {
     public List<Equipment> listAvailable() {
         return equipmentList.stream()
                 .filter(Equipment::isAvailable)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<Equipment> listAll() {

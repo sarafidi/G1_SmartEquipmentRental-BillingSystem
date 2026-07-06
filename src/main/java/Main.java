@@ -4,7 +4,7 @@ import view.MainFrame;
 import javax.swing.*;
 
 public class Main {
-    public static void main() {
+    public static void main(String[] args) {
         // init database files first so data lists are populated
         try {
             System.out.println("Initializing JSON Database...");

@@ -1,5 +1,9 @@
 package model.bill;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import model.rental.Rental;
 import model.rental.RentalManager;
 import model.strategy.DiscountedPricing;
@@ -7,9 +11,6 @@ import model.strategy.PenaltyRule;
 import model.strategy.PricingStrategy;
 import util.DataStore;
 import util.IDGenerator;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BillingManager {
     private List<Bill> bills;
@@ -72,7 +73,7 @@ public class BillingManager {
                     Rental r = findRentalForBill(b.getRentalId());
                     return r != null && r.getUser().getUserId().equalsIgnoreCase(userId);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Rental findRentalForBill(String rentalId) {
