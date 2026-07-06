@@ -26,18 +26,18 @@ import util.Validator;
 public class RentalPanel extends JPanel {
     private final RentalController controller = new RentalController();
     
-    // UI Components untuk Checkout Form
+    // UI Components for Checkout Form
     private JTextField txtUserId;
     private JTextField txtEquipmentId;
     private JTextField daysField;
     private JButton btnRent;
 
-    // UI Components untuk Return Form
+    // UI Components for Return Form
     private JTextField txtRentalId;
     private JComboBox<String> comboCondition;
     private JButton btnReturn;
 
-    // UI Components untuk Jadual
+    // UI Components for Schedule Table
     private JTable rentalTable;
     private DefaultTableModel tableModel;
 
@@ -46,11 +46,11 @@ public class RentalPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // ==========================================
-        // 1. BAHAGIAN ATAS: BORANG (FORM PANEL)
+        // 1. FORM PANEL
         // ==========================================
         JPanel formsContainer = new JPanel(new GridLayout(1, 2, 20, 0));
 
-        // ---- BORANG CHECKOUT ----
+        // ---- Form Checkout ----
         JPanel checkoutPanel = new JPanel(new GridBagLayout());
         checkoutPanel.setBorder(BorderFactory.createTitledBorder("Equipment Checkout (Rent)"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -63,13 +63,13 @@ public class RentalPanel extends JPanel {
         txtUserId = new JTextField(10);
         checkoutPanel.add(txtUserId, gbc);
 
-        // Autofill current user id kalau ada guna rule #5 Sara
+        // Autofill current user id
         try {
             if (SessionManager.getInstance().getCurrentUser() != null) {
                 txtUserId.setText(SessionManager.getInstance().getCurrentUser().getUserId());
             }
         } catch (Exception e) {
-            // Pasrah kalau SessionManager belum init
+            // Fail silent if no user logged in
         }
 
         gbc.gridx = 0; gbc.gridy = 1;
@@ -89,7 +89,7 @@ public class RentalPanel extends JPanel {
         btnRent.addActionListener(e -> onRentClick());
         checkoutPanel.add(btnRent, gbc);
 
-        // ---- BORANG RETURN ----
+        // ---- Form Return ----
         JPanel returnPanel = new JPanel(new GridBagLayout());
         returnPanel.setBorder(BorderFactory.createTitledBorder("Equipment Return"));
         GridBagConstraints gbc2 = new GridBagConstraints();
@@ -113,19 +113,19 @@ public class RentalPanel extends JPanel {
         btnReturn.addActionListener(e -> onReturnClick());
         returnPanel.add(btnReturn, gbc2);
 
-        // Masukkan dua borang dalam satu baris
+        // Add both forms to the container
         formsContainer.add(checkoutPanel);
         formsContainer.add(returnPanel);
         add(formsContainer, BorderLayout.NORTH);
 
         // ==========================================
-        // 2. BAHAGIAN TENGAH: JADUAL SEWAAN ACTIVE
+        // 2. SCHEDULE TABLE
         // ==========================================
         String[] columns = {"Rental ID", "User ID", "Equipment ID", "Days Rented", "Overdue Status"};
         tableModel = new DefaultTableModel(columns, 0);
         rentalTable = new JTable(tableModel);
         
-        // Listener bila klik row kat table, auto fill Rental ID kat form return
+        // Add selection listener to populate return form when a row is selected
         rentalTable.getSelectionModel().addListSelectionListener(e -> {
             int selectedRow = rentalTable.getSelectedRow();
             if (selectedRow != -1) {
@@ -137,7 +137,7 @@ public class RentalPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createTitledBorder("Active Rentals History & Status"));
         add(scrollPane, BorderLayout.CENTER);
 
-        // Muat data awal-awal masa panel dibuka
+        // Refresh table data on initialization
         refreshTable();
     }
 
@@ -146,7 +146,7 @@ public class RentalPanel extends JPanel {
         String equipmentId = txtEquipmentId.getText().trim();
         String daysStr = daysField.getText().trim();
 
-        // Validate basic input menggunakan Validator
+        // Validation checks
         if (!Validator.isNonEmpty(userId) || !Validator.isNonEmpty(equipmentId) || !Validator.isNonEmpty(daysStr)) {
             JOptionPane.showMessageDialog(this, "Please fill in all checkout fields!", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
@@ -159,13 +159,13 @@ public class RentalPanel extends JPanel {
                 return;
             }
 
-            // Panggil Controller untuk proses sewaan
+            // Call Controller to process rental
             Rental rental = controller.rentEquipment(userId, equipmentId, days);
             if (rental != null) {
                 JOptionPane.showMessageDialog(this, "Rental processing successful! ID: " + rental.getRentalId(), "Success", JOptionPane.INFORMATION_MESSAGE);
                 refreshTable();
                 
-                // Clear borang checkout
+                // Clear checkout form after successful rental
                 txtEquipmentId.setText("");
                 daysField.setText("");
             }
@@ -186,12 +186,12 @@ public class RentalPanel extends JPanel {
         }
 
         try {
-            // Panggil Controller untuk proses pemulangan
+            // Call Controller to process return
             controller.returnEquipment(rentalId, condition);
             JOptionPane.showMessageDialog(this, "Equipment returned successfully! Invoice/Bill automatically updated.", "Success", JOptionPane.INFORMATION_MESSAGE);
             refreshTable();
             
-            // Clear borang return
+            // Clear return form after successful return
             txtRentalId.setText("");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Return Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -199,11 +199,11 @@ public class RentalPanel extends JPanel {
     }
 
     public void refreshTable() {
-        // Reset/kosongkan table dulu
+        // Clear existing rows
         tableModel.setRowCount(0);
 
         try {
-            // Tarik data paling suci dari controller
+            // Fetch active rentals from controller and populate table
             List<Rental> activeRentals = controller.listAllRentals();
             for (Rental rental : activeRentals) {
                 Object[] rowData = {
@@ -211,12 +211,12 @@ public class RentalPanel extends JPanel {
                     rental.getUser().getUserId(),
                     rental.getEquipment().getEquipmentId(),
                     rental.getDaysRented(),
-                    rental.isOverdue() ? "🔴 OVERDUE" : "ON TIME"
+                    rental.isOverdue() ? "OVERDUE" : "ON TIME"
                 };
                 tableModel.addRow(rowData);
             }
         } catch (Exception e) {
-            // Fail silent or show error if database kosong
+            // Fail silently if unable to fetch rentals
         }
     }
 }
