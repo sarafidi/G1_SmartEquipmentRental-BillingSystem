@@ -232,29 +232,25 @@ public class EquipmentPanel extends JPanel {
                 return;
             }
 
-            Equipment eq;
-            if ("Electronics".equals(type)) {
-                eq = new ElectronicsEquipment(
+            Equipment eq = switch (type) {
+                case "Electronics" -> new ElectronicsEquipment(
                         id, name, rate,
                         Integer.parseInt(warrantyField.getText().trim())
                 );
-            } else if ("Media".equals(type)) {
-                eq = new MediaEquipment(
+                case "Media" -> new MediaEquipment(
                         id, name, rate,
                         depositCheckbox.isSelected(),
                         depositCheckbox.isSelected()
                                 ? Double.parseDouble(depositAmountField.getText().trim())
                                 : 0.0
                 );
-            } else if ("Lab".equals(type)) {
-                eq = new LabEquipment(
+                case "Lab" -> new LabEquipment(
                         id, name, rate,
                         Integer.parseInt(hazardLevelField.getText().trim()),
                         certCheckbox.isSelected()
                 );
-            } else {
-                throw new IllegalArgumentException("Unknown type");
-            }
+                default -> throw new IllegalArgumentException("Unknown type");
+            };
 
             controller.addEquipment(eq);
             refreshTable();
