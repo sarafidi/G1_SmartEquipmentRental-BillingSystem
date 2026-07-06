@@ -20,7 +20,6 @@ import javax.swing.table.DefaultTableModel;
 
 import controller.RentalController;
 import model.rental.Rental;
-import util.SessionManager;
 import util.Validator;
 
 public class RentalPanel extends JPanel {
@@ -65,8 +64,9 @@ public class RentalPanel extends JPanel {
 
         // Autofill current user id
         try {
-            if (SessionManager.getInstance().getCurrentUser() != null) {
-                txtUserId.setText(SessionManager.getInstance().getCurrentUser().getUserId());
+            String currUserId = controller.getCurrentUserId();
+            if (currUserId != null) {
+                txtUserId.setText(currUserId);
             }
         } catch (Exception e) {
             // Fail silent if no user logged in
