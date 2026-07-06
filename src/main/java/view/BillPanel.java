@@ -22,7 +22,6 @@ import java.awt.FlowLayout;
 
 import controller.BillingController;
 import model.bill.Bill;
-import util.SessionManager;
 
 public class BillPanel extends JPanel {
     private final BillingController controller = new BillingController();
@@ -168,7 +167,7 @@ public class BillPanel extends JPanel {
 
     // Bill history for the currently logged-in user
     public void refreshHistory() {
-        String userId = SessionManager.getInstance().getCurrentUser().getUserId();
+        String userId = controller.getCurrentUserId();
         currentHistory = controller.getBillHistory(userId);
 
         historyModel.setRowCount(0);

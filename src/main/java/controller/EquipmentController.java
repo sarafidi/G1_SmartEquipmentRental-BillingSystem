@@ -1,7 +1,9 @@
 package controller;
 
 import model.RentalSystemFacade;
+import model.UserType;
 import model.equipment.Equipment;
+import model.user.User;
 
 import java.util.List;
 
@@ -26,5 +28,10 @@ public class EquipmentController {
 
     public List<Equipment> listAllEquipment() {
         return facade.listAllEquipment();
+    }
+
+    public boolean isCurrentUserAdmin() {
+        User currUser = facade.getCurrentUser();
+        return currUser != null && currUser.getUserType() == UserType.ADMIN;
     }
 }

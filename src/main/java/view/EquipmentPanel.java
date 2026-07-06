@@ -19,13 +19,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import controller.EquipmentController;
-import model.UserType;
 import model.equipment.ElectronicsEquipment;
 import model.equipment.Equipment;
 import model.equipment.LabEquipment;
 import model.equipment.MediaEquipment;
 import util.IDGenerator;
-import util.SessionManager;
 
 public class EquipmentPanel extends JPanel {
     private final EquipmentController controller = new EquipmentController();
@@ -99,7 +97,7 @@ public class EquipmentPanel extends JPanel {
     // == SOUTH - Add / Remove form (ADMIN only) ==================================
     private void buildAddForm() {
         // hide entire form if not admin
-        boolean isAdmin = SessionManager.getInstance().getCurrentUser().getUserType() == UserType.ADMIN;
+        boolean isAdmin = controller.isCurrentUserAdmin();
         if (!isAdmin) return;
 
         JPanel south = new JPanel(new BorderLayout());

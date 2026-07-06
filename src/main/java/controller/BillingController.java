@@ -2,6 +2,7 @@ package controller;
 
 import model.RentalSystemFacade;
 import model.bill.Bill;
+import model.user.User;
 import util.Validator;
 
 import java.util.Collections;
@@ -39,4 +40,8 @@ public class BillingController {
         return facade.getBillHistory(userId);
     }
 
+    public String getCurrentUserId() {
+        User currUser = facade.getCurrentUser();
+        return currUser.getUserId();
+    }
 }

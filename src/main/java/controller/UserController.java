@@ -2,8 +2,6 @@ package controller;
 
 import model.RentalSystemFacade;
 import model.user.User;
-import util.HashUtil;
-import util.SessionManager;
 
 import java.util.List;
 
@@ -13,32 +11,18 @@ public class UserController {
 
     public boolean login(String userId, String rawPassword) {
         // Find user by ID
-        User user = facade.findById(userId);
-
-        // If user not found, return false
-        if (user == null) {
-            return false;
-        }
-
-        // Verify password using HashUtil
-        boolean isValid = HashUtil.verify(rawPassword, user.getPassword());
-
-        // If valid, set current user in SessionManager
-        if (isValid) {
-            SessionManager.getInstance().setCurrentUser(user);
-        }
-
-        return isValid;
+        User user = facade.login(userId, rawPassword);
+        return user != null;
     }
 
     public void logout() {
         // Clear the session
-        SessionManager.getInstance().clearSession();
+        facade.logout();
     }
 
-    public void addUser(User user) {
+    public String addUser(String name, String email, String rawPassword, String userType, String additional) {
         // Add user using facade
-        facade.addUser(user);
+        return facade.registerUser(name, email, rawPassword, userType, additional);
     }
 
     public void removeUser(String id) {
@@ -60,7 +44,7 @@ public class UserController {
     }
 
     public User getCurrentUser() {
-        // Get currently logged in user
-        return SessionManager.getInstance().getCurrentUser();
+        // Get currently logged-in user
+        return facade.getCurrentUser();
     }
 }

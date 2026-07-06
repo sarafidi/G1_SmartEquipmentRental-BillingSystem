@@ -4,6 +4,7 @@ import java.util.List;
 
 import model.RentalSystemFacade;
 import model.rental.Rental;
+import model.user.User;
 import util.Validator;
 
 public class RentalController {
@@ -39,5 +40,10 @@ public class RentalController {
 
     public List<Rental> listAllRentals() {
         return facade.listAllRentals();
+    }
+
+    public String getCurrentUserId() {
+        User currUser = facade.getCurrentUser();
+        return currUser.getUserId();
     }
 }
