@@ -49,7 +49,8 @@ public class Rental {
     */
     public int getDaysRented() {
         LocalDate end = (returnDate != null) ? returnDate : LocalDate.now();
-        return (int) ChronoUnit.DAYS.between(startDate, end);
+        int days = (int) ChronoUnit.DAYS.between(startDate, end);
+        return Math.max(1, days);
     }
 
     public int getDaysOverdue() {

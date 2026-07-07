@@ -146,7 +146,35 @@ public class BillPanel extends JPanel {
         sb.append("----------------------------------------\n");
         sb.append(String.format("%-20s RM %10.2f%n", "Base Rental Fee", bill.getBaseRentalFee()));
         sb.append(String.format("%-20s -RM %9.2f%n", "User Discount", bill.getDiscountAmount()));
-        sb.append(String.format("%-20s +RM %9.2f%n", "Penalties", bill.getPenaltyAmount()));
+        
+        // Show detailed penalties if any exist
+        if (bill.getPenaltyAmount() > 0) {
+            sb.append(String.format("%-20s +RM %9.2f%n", "Total Penalties", bill.getPenaltyAmount()));
+            model.rental.Rental rental = controller.findRentalById(bill.getRentalId());
+            if (rental != null) {
+                // Calculate individual fees for display
+                double lateFee = 0.0;
+                java.time.LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : java.time.LocalDate.now();
+                if (end.isAfter(rental.getDueDate())) {
+                    long lateDays = java.time.temporal.ChronoUnit.DAYS.between(rental.getDueDate(), end);
+                    lateFee = lateDays * 10.00; // default rate
+                }
+                
+                double damageFee = 0.0;
+                if ("Damaged".equalsIgnoreCase(rental.getCondition())) {
+                    damageFee = rental.getEquipment().getDailyRate() * 1.5;
+                }
+                
+                if (lateFee > 0) {
+                    sb.append(String.format("  - Late Return Fee : +RM %9.2f%n", lateFee));
+                }
+                if (damageFee > 0) {
+                    sb.append(String.format("  - Damage Surcharge: +RM %9.2f%n", damageFee));
+                }
+            }
+        } else {
+            sb.append(String.format("%-20s +RM %9.2f%n", "Penalties", 0.0));
+        }
         sb.append("----------------------------------------\n");
         sb.append(String.format("%-20s RM %10.2f%n", "NET PAYABLE", bill.getNetPayable()));
         sb.append("========================================\n");

@@ -85,6 +85,7 @@ public class MainFrame extends JFrame {
             equipmentPanel.refreshTable();
             rentalPanel.refreshTable();
             billPanel.refreshHistory();
+            reportPanel.refreshReportPanel();
         });
 
         add(tabbedPane, BorderLayout.CENTER);

@@ -55,10 +55,15 @@ public class ReportPanel extends JPanel {
         cards.add(makeCard("Total Rentals", String.valueOf(controller.getTotalRentalCount())));
         cards.add(makeCard("Total Revenue", String.format("RM %.2f", controller.getTotalRevenue())));
 
+        JButton refreshBtn = new JButton("Refresh");
+        refreshBtn.addActionListener(e -> refreshReportPanel());
+
         JButton downloadBtn = new JButton("Download Report (CSV)");
         downloadBtn.setFont(new Font("Arial", Font.BOLD, 12));
         downloadBtn.addActionListener(e -> onDownloadClick());
+
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.add(refreshBtn);
         btnPanel.add(downloadBtn);
 
         wrapper.add(cards, BorderLayout.CENTER);
@@ -127,6 +132,17 @@ public class ReportPanel extends JPanel {
             });
         }
         return new JScrollPane(new JTable(tableModel));
+    }
+
+    public void refreshReportPanel() {
+        removeAll();
+        add(buildSummaryCards(), BorderLayout.NORTH);
+        add(buildDetailsTab(), BorderLayout.CENTER);
+        add(lastUpdatedLabel, BorderLayout.SOUTH);
+
+        updateTimeStamp();
+        revalidate();
+        repaint();
     }
 
     // == CSV DOWNLOAD =============================================
