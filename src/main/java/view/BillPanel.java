@@ -36,6 +36,7 @@ public class BillPanel extends JPanel {
     private JTable historyTable;
     private DefaultTableModel historyModel;
     private List<Bill> currentHistory = new ArrayList<>();
+    private Bill activeBill;
 
     // Constructor 
     public BillPanel() {
@@ -54,6 +55,7 @@ public class BillPanel extends JPanel {
         JButton printBtn = new JButton("Print Receipt");
         JButton refreshBtn = new JButton("Refresh History");
 
+        rentalIdField.addActionListener(e -> onGenerateClick());
         generateBtn.addActionListener(e -> onGenerateClick());
         printBtn.addActionListener(e -> onPrintClick());
         refreshBtn.addActionListener(e -> refreshHistory());
@@ -113,17 +115,21 @@ public class BillPanel extends JPanel {
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Unable to Generate Bill", JOptionPane.ERROR_MESSAGE);
+            displayBill(null);
         }
     }
 
     private void onHistoryRowSelected() {
         int row = historyTable.getSelectedRow();
         if (row >= 0 && row < currentHistory.size()) {
-            displayBill(currentHistory.get(row));
+            Bill selectedBill = currentHistory.get(row);
+            rentalIdField.setText(selectedBill.getRentalId());
+            displayBill(selectedBill);
         }
     }
 
     public void displayBill(Bill bill) {
+        this.activeBill = bill;
         if (bill == null) {
             billArea.setText("No bill found for that Rental ID.\n" +
                     "(A bill is only generated after the equipment has been returned.)");
@@ -150,10 +156,12 @@ public class BillPanel extends JPanel {
     }
 
     public void onPrintClick() {
-        if (billArea.getText() == null || billArea.getText().isBlank()) {
+        String rentalIdEntered = rentalIdField.getText().trim();
+        if (activeBill == null || !activeBill.getRentalId().equalsIgnoreCase(rentalIdEntered)) {
             JOptionPane.showMessageDialog(this, "Generate or select a bill before printing.");
             return;
         }
+
         try {
             boolean printed = billArea.print();
             if (!printed) {
