@@ -15,14 +15,6 @@ public class BillingController {
         if (!Validator.isNonEmpty(rentalId)) {
             throw new IllegalArgumentException("Please enter a Rental ID.");
         }
-
-        Bill existing = facade.findBillByRental(rentalId);
-        if (existing != null) {
-            return existing;
-        }
-
-        // facade throws IllegalArgumentException if the rental ID doesn't exist -
-        // let it propagate up so the panel can show the error to the user.
         return facade.generateBill(rentalId);
     }
 

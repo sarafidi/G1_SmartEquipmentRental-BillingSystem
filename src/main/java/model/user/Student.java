@@ -15,8 +15,8 @@ public class Student extends User {
 
     @Override
     public double getDiscountRate() {
-        // students get 10% discount; Final year students (year >= 3) gets 20% discount
-        return isFinalYear() ? 0.20 : 0.10;
+        // students get 0% discount; Final year students (year >= 3) gets 20% discount
+        return isFinalYear() ? 0.20 : 0.0;
     }
 
     public boolean isFinalYear() {
