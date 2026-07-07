@@ -146,6 +146,10 @@ public class RentalSystemFacade {
         userManager.removeUser(id);
     }
 
+    public void updateUser(String id, String newName, String newEmail) {
+        userManager.updateUser(id, newName, newEmail);
+    }
+
     public User findById(String id) {
         return userManager.findById(id);
     }

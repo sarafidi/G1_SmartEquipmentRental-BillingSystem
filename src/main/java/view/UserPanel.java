@@ -2,6 +2,7 @@ package view;
 
 import controller.UserController;
 import model.user.User;
+import util.Validator;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -164,6 +165,14 @@ public class UserPanel extends JPanel {
             return;
         }
 
+        if (!Validator.isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this,
+                    "Email must be a valid email!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         if (password.length() < 6) {
             JOptionPane.showMessageDialog(this,
                     "Password must be at least 6 characters!",
@@ -235,18 +244,17 @@ public class UserPanel extends JPanel {
         }
 
         // Find the user and update
-        User user = controller.findById(userId);
-        if (user != null) {
-            user.setName(newName);
-            user.setEmail(newEmail);
+        try {
+            controller.updateUser(userId, newName, newEmail);
             JOptionPane.showMessageDialog(this,
                     "User updated successfully!",
                     "Success",
                     JOptionPane.INFORMATION_MESSAGE);
             loadUserData();
-        } else {
+            clearFields();
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                    "Failed to update user.",
+                    "Failed to update user: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }

@@ -15,7 +15,7 @@ public class Bill {
         By making the constructor private, we force callers to use Bill.Builder
         This prevents creating inconsistent Bill objs
     */
-    public Bill(Builder builder) {
+    private Bill(Builder builder) {
         this.billId = builder.billId;
         this.rentalId = builder.rentalId;
         this.baseRentalFee = builder.baseRentalFee;
