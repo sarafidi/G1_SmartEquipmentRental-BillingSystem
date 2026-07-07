@@ -7,6 +7,8 @@ import util.Validator;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class UserPanel extends JPanel {
@@ -107,7 +109,10 @@ public class UserPanel extends JPanel {
         addButton.addActionListener(e -> addUser());
         editButton.addActionListener(e -> editUser());
         deleteButton.addActionListener(e -> deleteUser());
-        refreshButton.addActionListener(e -> loadUserData());
+        refreshButton.addActionListener(e -> {
+            clearFields();
+            loadUserData();
+        });
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
@@ -127,6 +132,12 @@ public class UserPanel extends JPanel {
                 if (row >= 0) {
                     nameField.setText((String) tableModel.getValueAt(row, 1));
                     emailField.setText((String) tableModel.getValueAt(row, 2));
+                    String role = (String) tableModel.getValueAt(row, 3);
+                    if (role.equalsIgnoreCase("STAFF") || role.equalsIgnoreCase("ADMIN")) {
+                        userTypeCombo.setSelectedIndex(1);
+                    } else {
+                        userTypeCombo.setSelectedIndex(0);
+                    }
                 }
             }
         });
