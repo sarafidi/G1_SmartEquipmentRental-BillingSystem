@@ -21,7 +21,13 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        long buildUiStart = System.currentTimeMillis();
+        System.out.println("[PERF] Starting buildUI...");
+//        buildUI();
+        System.out.println("[PERF] buildUI took: " + (System.currentTimeMillis() - buildUiStart) + " ms");
+    }
 
+    public void showLoginAndBuild() {
         // if login fails or is canceled, dialog component stays
         while (!SessionManager.getInstance().isLoggedIn()) {
             // show login dialog before building main UI
@@ -33,8 +39,10 @@ public class MainFrame extends JFrame {
             //      calls System.exit(0) with a confirmation prompt
             //      if the user truly wants to quit.
         }
-
         buildUI();
+        setVisible(true);
+        revalidate();
+        repaint();
     }
 
     private void buildUI() {
