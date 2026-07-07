@@ -51,7 +51,12 @@ public class RentalManager {
         rental.setReturnDate(LocalDate.now());
         rental.setCondition(condition);
         rental.setStatus(RentalStatus.RETURNED);
-        rental.getEquipment().setAvailable(true);   // return item to inventory
+
+        Equipment e = instance.getEquipments().stream()
+                .filter(eq -> eq.getEquipmentId().equalsIgnoreCase(rental.getEquipment().getEquipmentId()))
+                .findFirst()
+                .orElse(null);
+        if (e != null) e.setAvailable(true);   // return item to inventory
 
         // save changes to JSON files
         instance.saveEquipment();

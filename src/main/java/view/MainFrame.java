@@ -81,6 +81,12 @@ public class MainFrame extends JFrame {
             tabbedPane.addTab("Reports", reportPanel);
         }
 
+        tabbedPane.addChangeListener(e -> {
+            equipmentPanel.refreshTable();
+            rentalPanel.refreshTable();
+            billPanel.refreshHistory();
+        });
+
         add(tabbedPane, BorderLayout.CENTER);
     }
 
