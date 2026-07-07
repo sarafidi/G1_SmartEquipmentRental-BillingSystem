@@ -33,6 +33,10 @@ public class UserController {
         facade.removeUser(id);
     }
 
+    public void updateUser(String id, String newName, String newEmail) {
+        facade.updateUser(id, newName, newEmail);
+    }
+
     public User findById(String id) {
         // Find user by ID using facade
         return facade.findById(id);

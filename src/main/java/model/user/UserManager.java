@@ -32,6 +32,15 @@ public class UserManager {
         // Create user object
         User newUser;
         if (userType.equals("Student")) {
+            try {
+                int year = Integer.parseInt(additional);
+                if (year < 1 || year > 4) {
+                    throw new IllegalArgumentException("Year of Study must be between 1 and 4.");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Year of Study must be a valid numeric integer");
+            }
+
             newUser = new Student(userId, name, email, hashedPassword, cardId, Integer.parseInt(additional));
         } else {
             newUser = new Staff(userId, name, email, hashedPassword, cardId, additional);
@@ -44,6 +53,16 @@ public class UserManager {
 
     public void removeUser(String id) {
         users.removeIf(u -> u.getUserId().equalsIgnoreCase(id));
+        instance.saveUsers();
+    }
+
+    public void updateUser(String userId, String newName, String newEmail) {
+        User user = findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found: " + userId);
+        }
+        user.setName(newName);
+        user.setEmail(newEmail);
         instance.saveUsers();
     }
 

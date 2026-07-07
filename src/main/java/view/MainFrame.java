@@ -46,6 +46,15 @@ public class MainFrame extends JFrame {
     }
 
     private void buildUI() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu accountMenu = new JMenu("Account");
+        JMenuItem logoutItem = new JMenuItem("Logout");
+
+        logoutItem.addActionListener(e -> handleLogout());
+        accountMenu.add(logoutItem);
+        menuBar.add(accountMenu);
+        setJMenuBar(menuBar);
+
         tabbedPane = new JTabbedPane();
 
         equipmentPanel = new EquipmentPanel();
@@ -66,5 +75,20 @@ public class MainFrame extends JFrame {
         }
 
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void handleLogout() {
+        int confirmDialog = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to log out?",
+                "Logout confirmation",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirmDialog == JOptionPane.YES_OPTION) {
+            SessionManager.getInstance().clearSession();
+            setVisible(false);
+            getContentPane().removeAll();
+            setJMenuBar(null);
+            showLoginAndBuild();
+        }
     }
 }
