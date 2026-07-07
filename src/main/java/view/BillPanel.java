@@ -36,6 +36,7 @@ public class BillPanel extends JPanel {
     private JTable historyTable;
     private DefaultTableModel historyModel;
     private List<Bill> currentHistory = new ArrayList<>();
+    private Bill activeBill;
 
     // Constructor 
     public BillPanel() {
@@ -54,6 +55,7 @@ public class BillPanel extends JPanel {
         JButton printBtn = new JButton("Print Receipt");
         JButton refreshBtn = new JButton("Refresh History");
 
+        rentalIdField.addActionListener(e -> onGenerateClick());
         generateBtn.addActionListener(e -> onGenerateClick());
         printBtn.addActionListener(e -> onPrintClick());
         refreshBtn.addActionListener(e -> refreshHistory());
@@ -113,17 +115,21 @@ public class BillPanel extends JPanel {
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Unable to Generate Bill", JOptionPane.ERROR_MESSAGE);
+            displayBill(null);
         }
     }
 
     private void onHistoryRowSelected() {
         int row = historyTable.getSelectedRow();
         if (row >= 0 && row < currentHistory.size()) {
-            displayBill(currentHistory.get(row));
+            Bill selectedBill = currentHistory.get(row);
+            rentalIdField.setText(selectedBill.getRentalId());
+            displayBill(selectedBill);
         }
     }
 
     public void displayBill(Bill bill) {
+        this.activeBill = bill;
         if (bill == null) {
             billArea.setText("No bill found for that Rental ID.\n" +
                     "(A bill is only generated after the equipment has been returned.)");
@@ -140,7 +146,35 @@ public class BillPanel extends JPanel {
         sb.append("----------------------------------------\n");
         sb.append(String.format("%-20s RM %10.2f%n", "Base Rental Fee", bill.getBaseRentalFee()));
         sb.append(String.format("%-20s -RM %9.2f%n", "User Discount", bill.getDiscountAmount()));
-        sb.append(String.format("%-20s +RM %9.2f%n", "Penalties", bill.getPenaltyAmount()));
+        
+        // Show detailed penalties if any exist
+        if (bill.getPenaltyAmount() > 0) {
+            sb.append(String.format("%-20s +RM %9.2f%n", "Total Penalties", bill.getPenaltyAmount()));
+            model.rental.Rental rental = controller.findRentalById(bill.getRentalId());
+            if (rental != null) {
+                // Calculate individual fees for display
+                double lateFee = 0.0;
+                java.time.LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : java.time.LocalDate.now();
+                if (end.isAfter(rental.getDueDate())) {
+                    long lateDays = java.time.temporal.ChronoUnit.DAYS.between(rental.getDueDate(), end);
+                    lateFee = lateDays * 10.00; // default rate
+                }
+                
+                double damageFee = 0.0;
+                if ("Damaged".equalsIgnoreCase(rental.getCondition())) {
+                    damageFee = rental.getEquipment().getDailyRate() * 1.5;
+                }
+                
+                if (lateFee > 0) {
+                    sb.append(String.format("  - Late Return Fee : +RM %9.2f%n", lateFee));
+                }
+                if (damageFee > 0) {
+                    sb.append(String.format("  - Damage Surcharge: +RM %9.2f%n", damageFee));
+                }
+            }
+        } else {
+            sb.append(String.format("%-20s +RM %9.2f%n", "Penalties", 0.0));
+        }
         sb.append("----------------------------------------\n");
         sb.append(String.format("%-20s RM %10.2f%n", "NET PAYABLE", bill.getNetPayable()));
         sb.append("========================================\n");
@@ -150,10 +184,12 @@ public class BillPanel extends JPanel {
     }
 
     public void onPrintClick() {
-        if (billArea.getText() == null || billArea.getText().isBlank()) {
+        String rentalIdEntered = rentalIdField.getText().trim();
+        if (activeBill == null || !activeBill.getRentalId().equalsIgnoreCase(rentalIdEntered)) {
             JOptionPane.showMessageDialog(this, "Generate or select a bill before printing.");
             return;
         }
+
         try {
             boolean printed = billArea.print();
             if (!printed) {

@@ -27,7 +27,10 @@ public class EquipmentManager {
     }
 
     public void removeEquipment(String id) {
-        equipmentList.removeIf(e -> e.getEquipmentId().equalsIgnoreCase(id));
+        Equipment e = findById(id);
+        if (e == null) throw new IllegalArgumentException("Equipment not found: " + id);
+        if (!e.isAvailable()) throw new IllegalStateException("This item is currently checked out on an active rental");
+        equipmentList.remove(e);
         DataStore.getInstance().saveEquipment();
     }
 

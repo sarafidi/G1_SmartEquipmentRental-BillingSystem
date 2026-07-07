@@ -47,12 +47,19 @@ public class MainFrame extends JFrame {
 
     private void buildUI() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu accountMenu = new JMenu("Account");
-        JMenuItem logoutItem = new JMenuItem("Logout");
+        menuBar.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        menuBar.add(Box.createHorizontalGlue());
 
-        logoutItem.addActionListener(e -> handleLogout());
-        accountMenu.add(logoutItem);
-        menuBar.add(accountMenu);
+        JButton logoutBtn = new JButton("Logout");
+        logoutBtn.setFont(new Font("Courier", Font.BOLD, 12));
+        logoutBtn.setForeground(new Color(200, 50,50));
+        logoutBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        logoutBtn.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+        logoutBtn.setContentAreaFilled(false);
+        logoutBtn.setFocusPainted(false);
+
+        logoutBtn.addActionListener(e -> handleLogout());
+        menuBar.add(logoutBtn);
         setJMenuBar(menuBar);
 
         tabbedPane = new JTabbedPane();
@@ -73,6 +80,13 @@ public class MainFrame extends JFrame {
             tabbedPane.addTab("User Management", userPanel);
             tabbedPane.addTab("Reports", reportPanel);
         }
+
+        tabbedPane.addChangeListener(e -> {
+            equipmentPanel.refreshTable();
+            rentalPanel.refreshTable();
+            billPanel.refreshHistory();
+            reportPanel.refreshReportPanel();
+        });
 
         add(tabbedPane, BorderLayout.CENTER);
     }

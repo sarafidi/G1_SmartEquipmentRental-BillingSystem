@@ -1,6 +1,10 @@
 package model.strategy;
 
+import model.RentalStatus;
 import model.rental.Rental;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class LatePenalty implements PenaltyRule {
     private final double penaltyRatePerDay;
@@ -11,10 +15,16 @@ public class LatePenalty implements PenaltyRule {
 
     @Override
     public double computePenalty(Rental rental) {
-        if (!rental.isOverdue()) {
+        if (rental.getStatus() == RentalStatus.CANCELLED) {
             return 0.0;
         }
-        return rental.getDaysOverdue() * penaltyRatePerDay;
+
+        LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : LocalDate.now();
+        if (end.isAfter(rental.getDueDate())) {
+            long overdueDays = ChronoUnit.DAYS.between(rental.getDueDate(), end);
+            return overdueDays * penaltyRatePerDay;
+        }
+        return 0.0;
     }
 
     @Override

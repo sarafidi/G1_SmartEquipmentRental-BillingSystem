@@ -2,6 +2,7 @@ package controller;
 
 import model.RentalSystemFacade;
 import model.bill.Bill;
+import model.rental.Rental;
 import model.user.User;
 import util.Validator;
 
@@ -35,5 +36,12 @@ public class BillingController {
     public String getCurrentUserId() {
         User currUser = facade.getCurrentUser();
         return currUser.getUserId();
+    }
+
+    public Rental findRentalById(String rentalId) {
+        if (!Validator.isNonEmpty(rentalId)) {
+            return null;
+        }
+        return facade.findRentalById(rentalId);
     }
 }

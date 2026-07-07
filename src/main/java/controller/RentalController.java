@@ -18,7 +18,8 @@ public class RentalController {
 
         // non-staff can only rent for themselves
         User loggedInUser = facade.getCurrentUser();
-        if (loggedInUser.getUserType() != UserType.ADMIN || loggedInUser.getUserType() != UserType.STAFF) {
+        if (loggedInUser.getUserType() != UserType.ADMIN && loggedInUser.getUserType() != UserType.STAFF) {
+            System.out.println(loggedInUser.getUserType());
             if (!loggedInUser.getUserId().equalsIgnoreCase(userId)) {
                 throw new IllegalArgumentException("Access Denied: Students can only rent equipment for their own User ID");
             }

@@ -121,10 +121,10 @@ public class RentalPanel extends JPanel {
         // ==========================================
         // 2. SCHEDULE TABLE
         // ==========================================
-        String[] columns = {"Rental ID", "User ID", "Equipment ID", "Days Rented", "Overdue Status"};
+        String[] columns = {"Rental ID", "User ID", "Equipment ID", "Days Rented", "Overdue Status", "Rental Status"};
         tableModel = new DefaultTableModel(columns, 0);
         rentalTable = new JTable(tableModel);
-        
+
         // Add selection listener to populate return form when a row is selected
         rentalTable.getSelectionModel().addListSelectionListener(e -> {
             int selectedRow = rentalTable.getSelectedRow();
@@ -134,7 +134,7 @@ public class RentalPanel extends JPanel {
         });
 
         JScrollPane scrollPane = new JScrollPane(rentalTable);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Active Rentals History & Status"));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Rentals History & Status"));
         add(scrollPane, BorderLayout.CENTER);
 
         // Refresh table data on initialization
@@ -211,7 +211,8 @@ public class RentalPanel extends JPanel {
                     rental.getUser().getUserId(),
                     rental.getEquipment().getEquipmentId(),
                     rental.getDaysRented(),
-                    rental.isOverdue() ? "OVERDUE" : "ON TIME"
+                    rental.isOverdue() ? "OVERDUE" : "ON TIME",
+                    rental.getStatus()
                 };
                 tableModel.addRow(rowData);
             }
