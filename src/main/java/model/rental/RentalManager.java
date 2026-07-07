@@ -60,6 +60,23 @@ public class RentalManager {
         return rental;
     }
 
+    public void cancelRental(String id) {
+        Rental rental = findById(id);
+        assert rental != null;
+
+        // set rentalStatus to cancelled and equipment available again
+        if (rental.getStatus() == RentalStatus.ACTIVE) {
+            rental.setStatus(RentalStatus.CANCELLED);
+            rental.getEquipment().setAvailable(true);
+
+            // save changes
+            DataStore.getInstance().saveRental();
+            DataStore.getInstance().saveEquipment();
+        } else {
+            throw new IllegalStateException("Only active rentals can be cancelled");
+        }
+    }
+
     public Rental findById(String id) {
         return rentals.stream()
                 .filter(r -> r.getRentalId().equalsIgnoreCase(id))

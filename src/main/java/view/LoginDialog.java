@@ -84,6 +84,9 @@ public class LoginDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton loginButton = new JButton("Login");
         JButton exitButton = new JButton("Exit");
+        // TODO: DELETE THIS BEFORE SUBMIT!!!!!!
+        userIdField.setText("USR-001");
+        passwordField.setText("admin123");
 
         // Login button action
         loginButton.addActionListener(e -> {
@@ -98,11 +101,15 @@ public class LoginDialog extends JDialog {
                 return;
             }
 
+            long start = System.currentTimeMillis();
             boolean success = userController.login(userId, password);
+            System.out.println("[PERF] Login verification took: " + (System.currentTimeMillis() - start) + " ms");
 
             if (success) {
                 loginSuccess = true;
+                long disposeStart = System.currentTimeMillis();
                 dispose(); // Close dialog
+                System.out.println("[PERF] Dialog dispose took: " + (System.currentTimeMillis() - disposeStart) + " ms");
             } else {
                 JOptionPane.showMessageDialog(this,
                         "Invalid User ID or Password. Please try again.",

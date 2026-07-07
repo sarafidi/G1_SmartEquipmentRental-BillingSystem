@@ -24,6 +24,7 @@ import model.equipment.Equipment;
 import model.equipment.LabEquipment;
 import model.equipment.MediaEquipment;
 import util.IDGenerator;
+import util.Validator;
 
 public class EquipmentPanel extends JPanel {
     private final EquipmentController controller = new EquipmentController();
@@ -223,11 +224,38 @@ public class EquipmentPanel extends JPanel {
             String id = IDGenerator.generateEquipmentId();
             String name = nameField.getText().trim();
             double rate = Double.parseDouble(rateField.getText().trim());
+
+            // validate rate is positive num
+            if (!Validator.isPositive(rate)) {
+                JOptionPane.showMessageDialog(this, "Daily rate must be a positive number", "Input Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String type = (String) typeBox.getSelectedItem();
 
             if (name.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Name cannot be empty.");
                 return;
+            }
+
+            assert type != null;
+
+            // validate non-negative check on deposit amount
+            if (type.equals("Media")) {
+                double depositAmount = Double.parseDouble(depositAmountField.getText().trim());
+                if (!Validator.isPositive(depositAmount)) {
+                    JOptionPane.showMessageDialog(this, "Deposit Amount must be a positive value", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
+            // validate hazardLevel is between 1-5
+            if (type.equals("Lab")) {
+                int hazardLevel = Integer.parseInt(hazardLevelField.getText().trim());
+                if (hazardLevel < 1 || hazardLevel > 5) {
+                    JOptionPane.showMessageDialog(this, "Hazard Level must be between 1 and 5", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
 
             Equipment eq = switch (type) {
@@ -254,7 +282,7 @@ public class EquipmentPanel extends JPanel {
             refreshTable();
             JOptionPane.showMessageDialog(this, "Equipment added! ID: " + id);
 
-            // clear fields after succesfull add
+            // clear fields after successfully add
             nameField.setText("");
             rateField.setText("");
             warrantyField.setText("");

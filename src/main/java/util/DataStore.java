@@ -27,7 +27,7 @@ public class DataStore {
     private ArrayList<Rental> rentals;
     private ArrayList<Bill> bills;
 
-    public DataStore() {
+    private DataStore() {
         this.users = new ArrayList<>();
         this.equipments = new ArrayList<>();
         this.rentals = new ArrayList<>();
@@ -51,6 +51,18 @@ public class DataStore {
         loadAll();
         if (users.isEmpty()) {
             seedAdmin();
+        }
+
+        verifyOrCreateFile("data/users.json", users);
+        verifyOrCreateFile("data/equipments.json", equipments);
+        verifyOrCreateFile("data/rentals.json", rentals);
+        verifyOrCreateFile("data/bills.json", bills);
+    }
+
+    private void verifyOrCreateFile(String path, Object list) {
+        File file = new File(path);
+        if (!file.exists()) {
+            saveList(path, list);
         }
     }
 
@@ -99,7 +111,22 @@ public class DataStore {
                     @Override
                     public Equipment deserialize(JsonElement json, Type typeofSrc, JsonDeserializationContext context) throws JsonParseException {
                         JsonObject jsonObject = json.getAsJsonObject();
-                        String type = jsonObject.get("type").getAsString();
+
+                        String type = null;
+                        if (jsonObject.has("type")) {
+                            type = jsonObject.get("type").getAsString();
+                        } else if (jsonObject.has("category")) {
+                            String categoryType = jsonObject.get("category").getAsString();
+                            type = switch (categoryType) {
+                                case "Electronics" -> "ElectronicsEquipment";
+                                case "Media" -> "MediaEquipment";
+                                case "Lab" -> "LabEquipment";
+                                default -> null;
+                            };
+                        }
+
+                        if (type == null) throw new JsonParseException("Failed to determine class type for equipment");
+
                         try {
                             Class<?> clazz = Class.forName("model.equipment." + type);
                             return context.deserialize(json, clazz);
@@ -120,12 +147,22 @@ public class DataStore {
                     @Override
                     public User deserialize(JsonElement json, Type typeofSrc, JsonDeserializationContext context) throws JsonParseException {
                         JsonObject jsonObject = json.getAsJsonObject();
-                        String type = jsonObject.get("type").getAsString();
+
+                        String type = null;
+                        if (jsonObject.has("type")) {
+                            type = jsonObject.get("type").getAsString();
+                        } else if (jsonObject.has("userType")) {
+                            String userType = jsonObject.get("userType").getAsString();
+                            type = ("ADMIN".equals(userType) || "STAFF".equals(userType)) ? "Staff" : "Student";
+                        }
+
+                        if (type == null) throw new JsonParseException("Failed to determine class type for user");
+
                         try {
                             Class<?> clazz = Class.forName("model.user." + type);
                             return context.deserialize(json, clazz);
                         } catch (ClassNotFoundException e) {
-                            throw new JsonParseException("Unknown equipment type: " + type, e);
+                            throw new JsonParseException("Unknown user type: " + type, e);
                         }
                     }
                 })
@@ -159,7 +196,7 @@ public class DataStore {
         // seed admin code here
         String hashPassword = HashUtil.sha256("admin123");
         User admin = new Staff(
-                "USR-001",
+                IDGenerator.generateUserId(),
                 "System Admin",
                 "admin@gmail.com",
                 hashPassword,

@@ -97,6 +97,10 @@ public class RentalSystemFacade {
         billingManager.generateBill(rental);
     }
 
+    public void cancelRental(String rentalId) {
+        rentalManager.cancelRental(rentalId);
+    }
+
     public Rental findRentalById(String id) {
         return rentalManager.findById(id);
     }
