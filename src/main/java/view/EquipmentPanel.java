@@ -74,6 +74,10 @@ public class EquipmentPanel extends JPanel {
         filterBox = new JComboBox<>(items);
         JButton searchBtn = new JButton("Search");
 
+        searchBtn.addActionListener(e -> onSearchClick());
+        searchField.addActionListener(e -> onSearchClick());
+        filterBox.addActionListener(e -> onSearchClick());
+
         topBar.add(new JLabel("Search: "));
         topBar.add(searchField);
         topBar.add(new JLabel("Category: "));
@@ -316,8 +320,14 @@ public class EquipmentPanel extends JPanel {
                 "Confirm Remove", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            controller.removeEquipment(id);
-            refreshTable();
+            try {
+                controller.removeEquipment(id);
+                refreshTable();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to remove equipment: " + e.getMessage(),
+                        "Error:", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
