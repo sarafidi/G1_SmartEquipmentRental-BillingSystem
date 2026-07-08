@@ -20,11 +20,6 @@ public class MainFrame extends JFrame {
         setSize(1100, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        long buildUiStart = System.currentTimeMillis();
-        System.out.println("[PERF] Starting buildUI...");
-//        buildUI();
-        System.out.println("[PERF] buildUI took: " + (System.currentTimeMillis() - buildUiStart) + " ms");
     }
 
     public void showLoginAndBuild() {
@@ -33,11 +28,6 @@ public class MainFrame extends JFrame {
             // show login dialog before building main UI
             LoginDialog loginDialog = new LoginDialog(this);
             loginDialog.setVisible(true);
-
-            // if user closes LoginDialog without logging in, while condition re-evaluates.
-            // LoginDialog should wire a close/camcel button that
-            //      calls System.exit(0) with a confirmation prompt
-            //      if the user truly wants to quit.
         }
         buildUI();
         setVisible(true);

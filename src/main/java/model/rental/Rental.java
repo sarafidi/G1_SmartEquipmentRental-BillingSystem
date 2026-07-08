@@ -15,7 +15,7 @@ public class Rental {
     private final LocalDate dueDate;
     private LocalDate returnDate;   // can be null if item not return yet
     private RentalStatus status;
-    private String condition;       // condition upon return "Excellent", "Damaged", etc
+    private String condition;
 
     public Rental(String rentalId, User user, Equipment equipment, LocalDate startDate, int daysRequested) {
         this.rentalId = rentalId;

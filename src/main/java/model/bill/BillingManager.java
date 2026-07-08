@@ -28,16 +28,16 @@ public class BillingManager {
     }
 
     public Bill generateBill(Rental rental) {
-        // bill should generate after rental is completed and returned
+        // bill generate after rental is completed and returned
         if (rental.getStatus() == RentalStatus.ACTIVE) {
             throw new IllegalArgumentException("Cannot generate bill: Rental is still ACTIVE. Equipment must be returned first.");
         }
 
-        // a rental can only have 1 bill
+        // 1 rental can only have 1 bill
         Bill exists = findBillByRental(rental.getRentalId());
         if (exists != null) return exists;
 
-        String billId = IDGenerator.generateBillId();   // auto generate bill id
+        String billId = IDGenerator.generateBillId();
 
         // get active pricing strategy directly from injected
         PricingStrategy pricing = (rentalManager != null)

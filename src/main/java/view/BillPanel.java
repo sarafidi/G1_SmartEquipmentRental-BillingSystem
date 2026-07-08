@@ -3,6 +3,8 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.print.PrinterException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,19 +30,15 @@ import model.rental.Rental;
 public class BillPanel extends JPanel {
     private final BillingController controller = new BillingController();
 
-    // Generate / lookup bar 
     private JTextField rentalIdField;
 
-    // Receipt display
     private JTextPane billArea;
 
-    // Bill history table 
     private JTable historyTable;
     private DefaultTableModel historyModel;
     private List<Bill> currentHistory = new ArrayList<>();
     private Bill activeBill;
 
-    // Constructor 
     public BillPanel() {
         setLayout(new BorderLayout(0, 5));
         buildTopBar();
@@ -48,7 +46,6 @@ public class BillPanel extends JPanel {
         refreshHistory();
     }
 
-    // Generate / View bar
     private void buildTopBar() {
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -175,9 +172,9 @@ public class BillPanel extends JPanel {
                 
                 // if this is a legacy bill with no saved itemized penalties
                 if (lateFee == 0.0 && damageFee == 0.0) {
-                    java.time.LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : java.time.LocalDate.now();
+                    LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : LocalDate.now();
                     if (end.isAfter(rental.getDueDate())) {
-                        long lateDays = java.time.temporal.ChronoUnit.DAYS.between(rental.getDueDate(), end);
+                        long lateDays = ChronoUnit.DAYS.between(rental.getDueDate(), end);
                         lateFee = lateDays * 10.00;
                     }
                     if ("Damaged".equalsIgnoreCase(rental.getCondition())) {

@@ -4,7 +4,6 @@ import model.UserType;
 import util.HashUtil;
 
 public abstract class User {
-    // encapsulation decision: marked private to prevent direct external modification
     private final String userId;
     private String name;
     private String email;
@@ -19,10 +18,8 @@ public abstract class User {
         this.userType = userType;
     }
 
-    // abstract: subclass must override to define their unique discount rate
     public abstract double getDiscountRate();
 
-    // abstract: subclass must override to return their unique studentId or staffId
     public abstract String getCardId();
 
     public String getUserId() {
@@ -51,7 +48,6 @@ public abstract class User {
         this.password = password;
     }
 
-    // check user password
     public boolean checkPassword(String rawPassword) {
         return HashUtil.verify(rawPassword, this.password);
     }

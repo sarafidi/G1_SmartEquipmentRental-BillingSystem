@@ -7,9 +7,7 @@ public class Main {
     public static void main(String[] args) {
         // init database files first so data lists are populated
         try {
-            System.out.println("Initializing JSON Database...");
             DataStore.getInstance().init();
-            System.out.println("Database successfully initialized");
         } catch (Exception e) {
             System.err.println("Fatal: Failed to initialize datastore");
             e.printStackTrace();
@@ -23,7 +21,6 @@ public class Main {
                 try {
                     // MainFrame is the top-level Swing JFrame wrapper
                     MainFrame mainFrame = new MainFrame();
-//                    mainFrame.setVisible(true);
                     mainFrame.showLoginAndBuild();
                 } catch (Exception e) {
                     System.err.println("Fatal: Failed to launch graphical interface");

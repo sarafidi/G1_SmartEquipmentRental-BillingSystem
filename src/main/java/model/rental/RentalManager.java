@@ -30,13 +30,11 @@ public class RentalManager {
             throw new IllegalStateException("Equipment is already rented.");
         }
 
-        // generate auto rental ID
         String rentalId = IDGenerator.generateRentalId();
         Rental rental = new Rental(rentalId, user, equipment, LocalDate.now(), days);
-        equipment.setAvailable(false);  // mark item as unavailable
+        equipment.setAvailable(false);
         rentals.add(rental);
 
-        // saved changes to JSON files
         instance.saveEquipment();
         instance.saveRental();
 
@@ -56,9 +54,9 @@ public class RentalManager {
                 .filter(eq -> eq.getEquipmentId().equalsIgnoreCase(rental.getEquipment().getEquipmentId()))
                 .findFirst()
                 .orElse(null);
+
         if (e != null) e.setAvailable(true);   // return item to inventory
 
-        // save changes to JSON files
         instance.saveEquipment();
         instance.saveRental();
 

@@ -3,6 +3,10 @@ package util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/* Referred to a website on utilizing this:
+    https://medium.com/@shiyang19822000/implementing-sha-hashing-in-java-a-practical-guide-with-code-f7da30a03d42
+ */
+
 public class HashUtil {
     public static String sha256(String input) {
         try {

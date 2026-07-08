@@ -37,8 +37,6 @@ public class Bill {
         return Math.max(0.0, baseRentalFee - discountAmount + penaltyAmount);
     }
 
-    // getters
-
     public String getBillId() {
         return billId;
     }

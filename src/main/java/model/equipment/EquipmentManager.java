@@ -10,7 +10,6 @@ public class EquipmentManager {
     private List<Equipment> equipmentList;
 
     public EquipmentManager() {
-        // load in-memory list stored from JSON by DataStore
         this.equipmentList = DataStore.getInstance().getEquipments();
     }
 
