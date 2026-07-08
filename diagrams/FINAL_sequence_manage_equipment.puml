@@ -30,129 +30,136 @@ skinparam sequence {
   NoteFontSize            12
 }
 
-' ═══════════════════════════════════════════════════
-' PARTICIPANTS — matches visual diagram 4
-' 6 lifelines: EquipmentPanel, EquipmentController,
-'              Facade, EquipmentManager,
-'              Equipment (new obj), DataStore
-' ═══════════════════════════════════════════════════
+actor "Admin" as Actor
 participant "EquipmentPanel" as View <<view>>
 participant "EquipmentController" as Ctrl <<controller>>
 participant "RentalSystemFacade" as Facade <<Facade>>
 participant "EquipmentManager" as EqMgr <<model>>
-participant "Electronics/Media/Lab\nEquipment (new)" as EqObj <<domain obj>>
+participant "Electronics/Media/Lab\nEquipment" as EqObj <<domain obj>>
 participant "DataStore" as DS <<Singleton>>
 
-' ═══════════════════════════════════════════════════
-' MESSAGE FLOW — matches visual diagram 4
-' ═══════════════════════════════════════════════════
+' ===================================================
+' ADD EQUIPMENT FLOW
+' ===================================================
+== Add Equipment Flow ==
 
-' Step 1 — Admin fills add-equipment form
-View -> Ctrl : onAddEquipmentClick()\n(name, category, rate)
+Actor -> View : onAddClick()
 activate View
+
+note over View : Validate name, rate and options\nParse numeric rate
+
+' Factory instantiation inside View
+alt Category is Electronics
+  View -> EqObj : new ElectronicsEquipment(id, name, rate, warranty)
+  activate EqObj
+  EqObj --> View : return Electronics object
+  deactivate EqObj
+else Category is Media
+  View -> EqObj : new MediaEquipment(id, name, rate, hasDeposit, depositAmt)
+  activate EqObj
+  EqObj --> View : return Media object
+  deactivate EqObj
+else Category is Lab
+  View -> EqObj : new LabEquipment(id, name, rate, hazardLevel, cert)
+  activate EqObj
+  EqObj --> View : return Lab object
+  deactivate EqObj
+end
+
+View -> Ctrl : addEquipment(equipment)
 activate Ctrl
 
-' alt: invalid fields
-group alt [invalid fields]
-  Ctrl --> View : show validation error
-end
-
-' Step 2
-Ctrl -> Facade : addEquipment(name, category, rate)
+Ctrl -> Facade : addEquipment(equipment)
 activate Facade
 
-' Step 3
-Facade -> EqMgr : addEquipment(name, category, rate)
+Facade -> EqMgr : addEquipment(equipment)
 activate EqMgr
 
-' Step 4 — duplicate check
-note over EqMgr : check duplicate equipmentId
+note over EqMgr : Add equipment to list
 
-group alt [duplicate ID found]
-  EqMgr --> Facade : return error
-end
-
-' Step 5 — polymorphism: instantiate correct subclass
-EqMgr -> EqObj : new ElectronicsEquipment()\nOR new MediaEquipment()\nOR new LabEquipment()\nbased on category
-activate EqObj
-
-' Step 6
-note over EqObj : set name, dailyRate\nset available = true
-
-' Step 7
-EqObj --> EqMgr : return equipment
-deactivate EqObj
-
-' Step 8
-note over EqMgr : equipmentList.add(equipment)
-
-' Step 9 — persist via Singleton
-EqMgr -> DS : DataStore.getInstance()\n.saveEquipment(equipmentList)
+EqMgr -> DS : saveEquipment()
 activate DS
-
-note over DS : Singleton — getInstance()\nguarantees one DataStore\nwriting to equipment.json
-
 DS --> EqMgr : saved
 deactivate DS
 
-' Step 12
-EqMgr --> Facade : return success
+EqMgr --> Facade : done
 deactivate EqMgr
 
-' Step 13
-Facade --> Ctrl : return success
+Facade --> Ctrl : done
 deactivate Facade
 
-' Step 14
-Ctrl --> View : return success
+Ctrl --> View : return done
 deactivate Ctrl
 
-' Step 15
-note over View : refreshTable()\nshow success message
+View -> View : refreshTable()
+activate View
+View -> Ctrl : listAllEquipment()
+activate Ctrl
+Ctrl -> Facade : listAllEquipment()
+activate Facade
+Facade -> EqMgr : listAll()
+activate EqMgr
+EqMgr --> Facade : return list
+deactivate EqMgr
+Facade --> Ctrl : return list
+deactivate Facade
+Ctrl --> View : return list
+deactivate Ctrl
+deactivate View
+View --> Actor : show success popup & refresh table
 deactivate View
 
-' ═══════════════════════════════════════════════════
-' REMOVE EQUIPMENT — same diagram, separate flow
-' ═══════════════════════════════════════════════════
-== Remove equipment (same actors, different path) ==
+|||
+' ===================================================
+' REMOVE EQUIPMENT FLOW
+' ===================================================
+== Remove Equipment Flow ==
 
-View -> Ctrl : onRemoveEquipmentClick(equipId)
+Actor -> View : onRemoveClick(id)
 activate View
+
+View -> Ctrl : removeEquipment(id)
 activate Ctrl
 
-Ctrl -> Facade : removeEquipment(equipId)
+Ctrl -> Facade : removeEquipment(id)
 activate Facade
 
-Facade -> EqMgr : removeEquipment(equipId)
+Facade -> EqMgr : removeEquipment(id)
 activate EqMgr
 
-note over EqMgr : findById(equipId)
+EqMgr -> EqMgr : findById(id)
+note over EqMgr : Check availability\nRemove from list
 
-group alt [equipment not found]
-  EqMgr --> Facade : return error
-end
-
-group alt [equipment has ACTIVE rental]
-  EqMgr --> Facade : return error\n(cannot remove while rented)
-end
-
-note over EqMgr : equipmentList.remove(equipment)
-
-EqMgr -> DS : DataStore.getInstance()\n.saveEquipment(equipmentList)
+EqMgr -> DS : saveEquipment()
 activate DS
 DS --> EqMgr : saved
 deactivate DS
 
-EqMgr --> Facade : return success
+EqMgr --> Facade : done
 deactivate EqMgr
 
-Facade --> Ctrl : return success
+Facade --> Ctrl : done
 deactivate Facade
 
-Ctrl --> View : return success
+Ctrl --> View : return done
 deactivate Ctrl
 
-note over View : refreshTable()\nshow success message
+View -> View : refreshTable()
+activate View
+View -> Ctrl : listAllEquipment()
+activate Ctrl
+Ctrl -> Facade : listAllEquipment()
+activate Facade
+Facade -> EqMgr : listAll()
+activate EqMgr
+EqMgr --> Facade : return list
+deactivate EqMgr
+Facade --> Ctrl : return list
+deactivate Facade
+Ctrl --> View : return list
+deactivate Ctrl
+deactivate View
+View --> Actor : show success popup & refresh table
 deactivate View
 
 @enduml

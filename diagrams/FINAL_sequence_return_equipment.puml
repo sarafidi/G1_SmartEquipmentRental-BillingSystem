@@ -30,32 +30,72 @@ skinparam sequence {
   NoteFontSize            12
 }
 
-' ═══════════════════════════════════════════════════
-' PARTICIPANTS — matches visual diagram 3
-' 6 lifelines: RentalPanel, RentalController, Facade,
-'              RentalManager, PenaltyRule, DataStore
-' ═══════════════════════════════════════════════════
+actor "Student/Staff" as Actor
 participant "RentalPanel" as View <<view>>
+participant "Validator" as Val <<util>>
 participant "RentalController" as Ctrl <<controller>>
 participant "RentalSystemFacade" as Facade <<Facade>>
+participant "SessionManager" as Session <<Singleton>>
 participant "RentalManager" as RentMgr <<model>>
 participant "BillingManager" as BillMgr <<model>>
-participant "PenaltyRule" as Rule <<interface>>
 participant "DataStore" as DS <<Singleton>>
+participant "Equipment" as EquipObj <<domain obj>>
+participant "IDGenerator" as IDGen <<util>>
+participant "PricingStrategy" as Price <<interface>>
+participant "PenaltyRule" as Rule <<interface>>
+participant "Bill.Builder" as Builder <<Builder>>
 
-' ═══════════════════════════════════════════════════
-' MESSAGE FLOW — matches visual diagram 3
-' ═══════════════════════════════════════════════════
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
 
-' Step 1
-View -> Ctrl : onReturnClick()
+Actor -> View : onReturnClick()
 activate View
+
+' View Validation
+View -> Val : isNonEmpty(rentalId)
+activate Val
+Val --> View
+deactivate Val
+
+View -> Val : isNonEmpty(condition)
+activate Val
+Val --> View
+deactivate Val
+
+' View calls Controller
+View -> Ctrl : returnEquipment(rentalId, condition)
 activate Ctrl
 
-' Security validation checks
-note over Ctrl : Validate logged-in user.\nIf STUDENT, verify they\nown this rental record.
+' Controller Validation
+Ctrl -> Val : isNonEmpty(rentalId)
+activate Val
+Val --> Ctrl
+deactivate Val
 
-' Step 2
+Ctrl -> Val : isNonEmpty(condition)
+activate Val
+Val --> Ctrl
+deactivate Val
+
+' Security Check
+Ctrl -> Facade : getCurrentUser()
+activate Facade
+Facade -> Session : getCurrentUser()
+activate Session
+Session --> Facade : return loggedInUser
+deactivate Session
+Facade --> Ctrl : return loggedInUser
+deactivate Facade
+
+Ctrl -> Facade : findRentalById(rentalId)
+activate Facade
+Facade --> Ctrl : return rental
+deactivate Facade
+
+note over Ctrl : If STUDENT, verify they\nown this rental record.
+
+' Step 2 — Controller calls Facade
 Ctrl -> Facade : returnEquipment(rentalId, condition)
 activate Facade
 
@@ -66,7 +106,16 @@ activate RentMgr
 ' Step 4 — RentalManager updates states
 RentMgr -> RentMgr : findById(rentalId)
 note over RentMgr : setReturnDate(LocalDate.now())\nsetCondition(condition)\nsetStatus(RETURNED)
-note over RentMgr : Set associated Equipment available = true
+
+RentMgr -> DS : getEquipments()
+activate DS
+DS --> RentMgr : return equipmentsList
+deactivate DS
+
+RentMgr -> EquipObj : setAvailable(true)
+activate EquipObj
+EquipObj --> RentMgr
+deactivate EquipObj
 
 ' Step 5 — Save model changes
 RentMgr -> DS : saveRental()
@@ -87,8 +136,54 @@ deactivate RentMgr
 Facade -> BillMgr : generateBill(rental)
 activate BillMgr
 
-' Step 7 — BillingManager calculates and builds
-note over BillMgr : Calculate baseFee, discount, and penalties
+BillMgr -> IDGen : generateBillId()
+activate IDGen
+IDGen --> BillMgr : return billId
+deactivate IDGen
+
+BillMgr -> RentMgr : getPricingStrategy()
+activate RentMgr
+RentMgr --> BillMgr : return pricing
+deactivate RentMgr
+
+BillMgr -> Price : calculateFee(equipment, days)
+activate Price
+Price --> BillMgr : return baseFee
+deactivate Price
+
+BillMgr -> Price : applyDiscount(user, baseFee)
+activate Price
+Price --> BillMgr : return discount
+deactivate Price
+
+BillMgr -> RentMgr : getPenaltyRules()
+activate RentMgr
+RentMgr --> BillMgr : return rules
+deactivate RentMgr
+
+loop for each PenaltyRule rule in rules
+  BillMgr -> Rule : computePenalty(rental)
+  activate Rule
+  Rule --> BillMgr : return penaltyAmt
+  deactivate Rule
+  note over BillMgr : if rule instanceof LatePenalty:\n  latePenalty += penaltyAmt\nelse if rule instanceof DamagePenalty:\n  damagePenalty += penaltyAmt
+end
+
+|||
+BillMgr -> Builder : new Builder(billId, rentalId)
+activate Builder
+
+BillMgr -> Builder : .baseRentalFee(baseFee)
+BillMgr -> Builder : .discountAmount(discount)
+BillMgr -> Builder : .latePenalty(latePenalty)
+BillMgr -> Builder : .damagePenalty(damagePenalty)
+
+BillMgr -> Builder : .build()
+Builder --> BillMgr : return Bill
+deactivate Builder
+
+|||
+' Step 7 — persist bill
 BillMgr -> DS : saveBill()
 activate DS
 DS --> BillMgr : saved
@@ -101,10 +196,52 @@ deactivate BillMgr
 Facade --> Ctrl : return done
 deactivate Facade
 
-Ctrl --> View : success
+Ctrl --> View : return success
 deactivate Ctrl
 
-note over View : refreshTable()\nShow message box "Success"
+' Post-return actions (alt block for table refresh)
+alt return success
+  View -> View : refreshTable()
+  activate View
+  
+  alt userType is ADMIN or STAFF
+    View -> Ctrl : listAllRentals()
+    activate Ctrl
+    Ctrl -> Facade : listAllRentals()
+    activate Facade
+    Facade -> RentMgr : listAll()
+    activate RentMgr
+    RentMgr --> Facade : return rentalsList
+    deactivate RentMgr
+    Facade --> Ctrl : return rentalsList
+    deactivate Facade
+    Ctrl --> View : return rentalsList
+    deactivate Ctrl
+  else userType is STUDENT
+    View -> Ctrl : getUserRentals(userId)
+    activate Ctrl
+    
+    Ctrl -> Val : isNonEmpty(userId)
+    activate Val
+    Val --> Ctrl
+    deactivate Val
+    
+    Ctrl -> Facade : getUserRentals(userId)
+    activate Facade
+    Facade -> RentMgr : getRentalsByUser(userId)
+    activate RentMgr
+    RentMgr --> Facade : return userRentals
+    deactivate RentMgr
+    Facade --> Ctrl : return userRentals
+    deactivate Facade
+    Ctrl --> View : return userRentals
+    deactivate Ctrl
+  end
+  deactivate View
+  View --> Actor : show success popup & refresh table
+else return failed
+  View --> Actor : show error dialog popup
+end
 deactivate View
 
 @enduml

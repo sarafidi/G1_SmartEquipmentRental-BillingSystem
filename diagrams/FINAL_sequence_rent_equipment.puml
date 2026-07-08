@@ -1,8 +1,5 @@
 @startuml RentEquipment
 
-' ═══════════════════════════════════════════════════
-' SKIN & STYLE
-' ═══════════════════════════════════════════════════
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
 skinparam maxMessageSize 200
@@ -33,74 +30,119 @@ skinparam sequence {
   NoteFontSize            12
 }
 
-' ═══════════════════════════════════════════════════
-' PARTICIPANTS — exactly matching the visual diagram
-' ═══════════════════════════════════════════════════
+actor "Student/Staff" as Actor
 participant "RentalPanel" as View <<view>>
+participant "Validator" as Val <<util>>
 participant "RentalController" as Ctrl <<controller>>
 participant "RentalSystemFacade" as Facade <<Facade>>
-participant "EquipmentManager"             as EqMgr <<model>>
-participant "RentalManager"               as RentMgr <<model>>
+participant "SessionManager" as Session <<Singleton>>
+participant "UserManager" as UserMgr <<model>>
+participant "EquipmentManager" as EqMgr <<model>>
+participant "RentalManager" as RentMgr <<model>>
+participant "IDGenerator" as IDGen <<util>>
 participant "Rental" as Rental <<domain obj>>
 participant "Equipment" as EquipObj <<domain obj>>
 participant "DataStore" as DS <<Singleton>>
 
-' ═══════════════════════════════════════════════════
-' MESSAGE FLOW — matches visual diagram step by step
-' ═══════════════════════════════════════════════════
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
 
-' Step 1
-View -> Ctrl : onRentClick()
+Actor -> View : onRentClick()
 activate View
+
+' Validation in View
+View -> Val : isNonEmpty(userId)
+activate Val
+Val --> View
+deactivate Val
+
+View -> Val : isNonEmpty(equipmentId)
+activate Val
+Val --> View
+deactivate Val
+
+View -> Val : isNonEmpty(daysStr)
+activate Val
+Val --> View
+deactivate Val
+
+View -> Val : isValidDays(days)
+activate Val
+Val --> View
+deactivate Val
+
+' View calls Controller
+View -> Ctrl : rentEquipment(userId, equipmentId, days)
 activate Ctrl
 
-' Step 2
-Ctrl -> Facade : rentEquipment(userId, equipId, days)
+' Controller validation
+Ctrl -> Val : isNonEmpty(userId)
+activate Val
+Val --> Ctrl
+deactivate Val
+
+Ctrl -> Val : isNonEmpty(equipmentId)
+activate Val
+Val --> Ctrl
+deactivate Val
+
+Ctrl -> Val : isValidDays(days)
+activate Val
+Val --> Ctrl
+deactivate Val
+
+' Security validation check
+Ctrl -> Facade : getCurrentUser()
+activate Facade
+Facade -> Session : getCurrentUser()
+activate Session
+Session --> Facade : return loggedInUser
+deactivate Session
+Facade --> Ctrl : return loggedInUser
+deactivate Facade
+
+note over Ctrl : Validate logged-in user.\nIf STUDENT, verify they\nonly rent for their own userId.
+
+' Controller calls Facade
+Ctrl -> Facade : rentEquipment(userId, equipmentId, days)
 activate Facade
 
-' alt: invalid input
-group alt [invalid input]
-  Ctrl --> View : show validation error
-end
+' Facade looks up user
+Facade -> UserMgr : findById(userId)
+activate UserMgr
+note over UserMgr : u -> u.getUserId().equalsIgnoreCase(userId)
+UserMgr --> Facade : return user
+deactivate UserMgr
 
-' Step 3
-Facade -> EqMgr : findById(equipId)
+' Facade looks up equipment
+Facade -> EqMgr : findById(equipmentId)
 activate EqMgr
-
-' alt: not available
-group alt [equipment not available]
-  EqMgr --> Facade : return error
-end
-
-' Step 4 (implicit — availability check inside EqMgr)
-note over EqMgr : check available
-
-' Step 5
+note over EqMgr : e -> e.getEquipmentId().equalsIgnoreCase(equipmentId)
 EqMgr --> Facade : return equipment
 deactivate EqMgr
 
-|||
-' Step 6 — Facade delegates creation to RentalManager
+' Facade calls RentalManager
 Facade -> RentMgr : createRental(user, equipment, days)
 activate RentMgr
 
-' Step 7 — Check availability
-note over RentMgr : check if equipment is available
+' RentalManager generates ID, instantiates Rental, and saves
+RentMgr -> IDGen : generateRentalId()
+activate IDGen
+IDGen --> RentMgr : return rentalId
+deactivate IDGen
 
-' Step 8 — Instantiate Rental domain object
 RentMgr -> Rental : new Rental(rentalId, user, equipment, LocalDate.now(), days)
 activate Rental
 note over Rental : set status ACTIVE
 Rental --> RentMgr : return rental
 deactivate Rental
 
-' Step 9 — Mark equipment as rented
 RentMgr -> EquipObj : setAvailable(false)
 activate EquipObj
-EquipObj --> RentMgr : ok
+EquipObj --> RentMgr
 deactivate EquipObj
 
-' Step 10 — Save updated lists via DataStore Singleton
 RentMgr -> DS : saveEquipment()
 activate DS
 DS --> RentMgr : saved
@@ -111,20 +153,58 @@ activate DS
 DS --> RentMgr : saved
 deactivate DS
 
-' Step 11
 RentMgr --> Facade : return rental
 deactivate RentMgr
 
-' Step 15
 Facade --> Ctrl : return rental
 deactivate Facade
 
-' Step 16
 Ctrl --> View : return rental
 deactivate Ctrl
 
-' Step 17
-note over View : refreshTable()\nshow success message
+' Post-rental actions (alt block)
+alt rental != null
+  View -> View : refreshTable()
+  activate View
+  
+  alt userType is ADMIN or STAFF
+    View -> Ctrl : listAllRentals()
+    activate Ctrl
+    Ctrl -> Facade : listAllRentals()
+    activate Facade
+    Facade -> RentMgr : listAll()
+    activate RentMgr
+    RentMgr --> Facade : return rentalsList
+    deactivate RentMgr
+    Facade --> Ctrl : return rentalsList
+    deactivate Facade
+    Ctrl --> View : return rentalsList
+    deactivate Ctrl
+  else userType is STUDENT
+    View -> Ctrl : getUserRentals(userId)
+    activate Ctrl
+    
+    Ctrl -> Val : isNonEmpty(userId)
+    activate Val
+    Val --> Ctrl
+    deactivate Val
+    
+    Ctrl -> Facade : getUserRentals(userId)
+    activate Facade
+    Facade -> RentMgr : getRentalsByUser(userId)
+    activate RentMgr
+    RentMgr --> Facade : return userRentals
+    deactivate RentMgr
+    Facade --> Ctrl : return userRentals
+    deactivate Facade
+    Ctrl --> View : return userRentals
+    deactivate Ctrl
+  end
+  deactivate View
+  View --> Actor : show success popup & refresh table
+else rental == null
+  View --> Actor : show error dialog popup
+end
 deactivate View
 
 @enduml

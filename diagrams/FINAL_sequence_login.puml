@@ -1,108 +1,112 @@
 @startuml Login
 
-skinparam monochrome true
-skinparam shadowing false
-skinparam defaultFontSize 12
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
 skinparam maxMessageSize 200
 skinparam roundcorner 8
+skinparam shadowing false
 skinparam stereotypePosition bottom
 skinparam ParticipantPadding 40
 
-' ═══════════════════════════════════════════════════
-' PARTICIPANTS
-' 7 lifelines: LoginDialog, UserController, Facade,
-'              UserManager, User (domain obj),
-'              HashUtil, SessionManager, DataStore
-' ═══════════════════════════════════════════════════
-  participant "LoginDialog" as View <<view>>
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
 
-  participant "UserController" as Ctrl <<controller>>
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           12
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           12
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            12
+}
 
-  participant "RentalSystemFacade" as Facade <<Facade>>
-  participant "UserManager"                as UserMgr <<model>>
+actor "User" as Actor
+participant "LoginDialog" as View <<view>>
+participant "UserController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "UserManager" as UserMgr <<model>>
+participant "User\n(Student/Staff, incl. Admin)" as UserObj <<domain obj>>
+participant "HashUtil" as Hash <<util>>
+participant "SessionManager" as Session <<Singleton>>
 
-  participant "User\n(Student/Staff, incl. Admin)" as UserObj <<domain obj>>
-
-  participant "HashUtil" as Hash <<util>>
-  participant "SessionManager" as Session <<Singleton>>
-  participant "DataStore" as DS <<Singleton>>
-
-' ═══════════════════════════════════════════════════
+' ===================================================
 ' MESSAGE FLOW
-' ═══════════════════════════════════════════════════
+' ===================================================
 
-' Step 1
-View -> Ctrl : onLoginClick(userId, password)
+Actor -> View : onLoginClick(userId, password)
 activate View
-activate Ctrl
 
-' alt: empty fields
-group alt [empty userId or password]
-  Ctrl --> View : show validation error
+note over View : check if userId or password is empty
+alt empty fields
+  View --> Actor : show validation error
 end
 
-' Step 2
+View -> Ctrl : login(userId, password)
+activate Ctrl
+
+' Controller calls Facade
 Ctrl -> Facade : login(userId, password)
 activate Facade
 
-' Step 3
+' Facade authenticates
 Facade -> UserMgr : authenticate(userId, password)
 activate UserMgr
 
-' Step 4 — lookup user
-note over UserMgr : findById(userId)
+' UserManager looks up user
+UserMgr -> UserMgr : findById(userId)
 
-group alt [user not found]
+alt user == null
   UserMgr --> Facade : return null
-  Facade --> Ctrl : return null
-  Ctrl --> View : show "invalid credentials"
+else user != null
+  ' User checks password
+  UserMgr -> UserObj : checkPassword(password)
+  activate UserObj
+  UserObj -> Hash : verify(password, storedHash)
+  activate Hash
+  Hash --> UserObj : return match (boolean)
+  deactivate Hash
+  UserObj --> UserMgr : return match (boolean)
+  deactivate UserObj
+  
+  alt password match
+    UserMgr --> Facade : return user
+  else password mismatch
+    UserMgr --> Facade : return null
+  end
 end
-
-' Step 5
-UserMgr -> UserObj : checkPassword(password)
-activate UserObj
-
-' Step 6 — delegate hash comparison
-UserObj -> Hash : verify(password, storedHash)
-activate Hash
-Hash --> UserObj : return boolean
-deactivate Hash
-
-UserObj --> UserMgr : return boolean
-deactivate UserObj
-
-group alt [password mismatch]
-  UserMgr --> Facade : return null
-  Facade --> Ctrl : return null
-  Ctrl --> View : show "invalid credentials"
-end
-
-' Step 7
-UserMgr --> Facade : return user
 deactivate UserMgr
 
-|||
-Facade -> Session : SessionManager.getInstance()\n.setCurrentUser(user)
-activate Session
-note over Session : store currentUser\nfor this application run
-Session --> Facade : ok
-deactivate Session
-|||
+' Facade saves current session
+alt user != null
+  Facade -> Session : setCurrentUser(user)
+  activate Session
+  Session --> Facade : ok
+  deactivate Session
+end
 
-' Step 9
 Facade --> Ctrl : return user
 deactivate Facade
 
-' Step 10
 Ctrl --> View : return success (boolean)
 deactivate Ctrl
 
-' Step 11
-note over View : close dialog\nlaunch MainFrame\n(route by user.getUserType())
+alt success is true (user != null)
+  note over View : close dialog\nlaunch MainFrame\n(route by user.getUserType())
+  View --> Actor : route to MainFrame screen
+else success is false (user == null)
+  note over View : show warning dialog\n"Invalid Username or Password"
+  View --> Actor : show error dialog popup
+end
 deactivate View
-
-note over DS : Users were already loaded into\nUserManager at startup via\nDataStore.getInstance().loadUsers()
 
 @enduml

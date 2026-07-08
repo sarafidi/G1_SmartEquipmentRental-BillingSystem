@@ -30,32 +30,72 @@ skinparam sequence {
   NoteFontSize            12
 }
 
+actor "Student/Staff" as Actor
 participant "RentalPanel" as View <<view>>
+participant "Validator" as Val <<util>>
 participant "RentalController" as Ctrl <<controller>>
 participant "RentalSystemFacade" as Facade <<Facade>>
+participant "SessionManager" as Session <<Singleton>>
 participant "RentalManager" as RentMgr <<model>>
 participant "DataStore" as DS <<Singleton>>
+participant "Equipment" as EquipObj <<domain obj>>
 
 ' ===================================================
 ' MESSAGE FLOW
 ' ===================================================
 
-View -> Ctrl : cancelRental(rentalId)
+Actor -> View : onCancelClick()
 activate View
+
+' View calls Controller
+View -> Ctrl : cancelRental(rentalId)
 activate Ctrl
 
-' Controller Security Check
-note over Ctrl : Validate logged-in user.\nIf STUDENT, verify they\nown this rental record.
+' Controller Input Validation
+Ctrl -> Val : isNonEmpty(rentalId)
+activate Val
+Val --> Ctrl
+deactivate Val
 
+' Security Check
+Ctrl -> Facade : getCurrentUser()
+activate Facade
+Facade -> Session : getCurrentUser()
+activate Session
+Session --> Facade : return loggedInUser
+deactivate Session
+Facade --> Ctrl : return loggedInUser
+deactivate Facade
+
+Ctrl -> Facade : findRentalById(rentalId)
+activate Facade
+Facade --> Ctrl : return rental
+deactivate Facade
+
+note over Ctrl : If STUDENT, verify they\nown this rental record.
+
+' Step 2 — Controller calls Facade
 Ctrl -> Facade : cancelRental(rentalId)
 activate Facade
 
+' Step 3 — Facade calls RentalManager
 Facade -> RentMgr : cancelRental(rentalId)
 activate RentMgr
 
 RentMgr -> RentMgr : findById(rentalId)
-note over RentMgr : Set status to CANCELLED.\nMake associated Equipment\navailable in inventory.
+note over RentMgr : Set status to CANCELLED
 
+RentMgr -> DS : getEquipments()
+activate DS
+DS --> RentMgr : return equipmentsList
+deactivate DS
+
+RentMgr -> EquipObj : setAvailable(true)
+activate EquipObj
+EquipObj --> RentMgr
+deactivate EquipObj
+
+' Step 4 — Save model changes
 RentMgr -> DS : saveRental()
 activate DS
 DS --> RentMgr : saved
@@ -72,10 +112,52 @@ deactivate RentMgr
 Facade --> Ctrl : done
 deactivate Facade
 
-Ctrl --> View : success
+Ctrl --> View : return success
 deactivate Ctrl
 
-note over View : refreshTable()\nShow message box "Success"
+' Post-cancel actions (alt block for table refresh)
+alt cancel success
+  View -> View : refreshTable()
+  activate View
+  
+  alt userType is ADMIN or STAFF
+    View -> Ctrl : listAllRentals()
+    activate Ctrl
+    Ctrl -> Facade : listAllRentals()
+    activate Facade
+    Facade -> RentMgr : listAll()
+    activate RentMgr
+    RentMgr --> Facade : return rentalsList
+    deactivate RentMgr
+    Facade --> Ctrl : return rentalsList
+    deactivate Facade
+    Ctrl --> View : return rentalsList
+    deactivate Ctrl
+  else userType is STUDENT
+    View -> Ctrl : getUserRentals(userId)
+    activate Ctrl
+    
+    Ctrl -> Val : isNonEmpty(userId)
+    activate Val
+    Val --> Ctrl
+    deactivate Val
+    
+    Ctrl -> Facade : getUserRentals(userId)
+    activate Facade
+    Facade -> RentMgr : getRentalsByUser(userId)
+    activate RentMgr
+    RentMgr --> Facade : return userRentals
+    deactivate RentMgr
+    Facade --> Ctrl : return userRentals
+    deactivate Facade
+    Ctrl --> View : return userRentals
+    deactivate Ctrl
+  end
+  deactivate View
+  View --> Actor : show success popup & refresh table
+else cancel failed
+  View --> Actor : show error dialog popup
+end
 deactivate View
 
 @enduml

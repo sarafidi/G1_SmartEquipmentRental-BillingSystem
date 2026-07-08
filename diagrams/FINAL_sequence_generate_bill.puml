@@ -30,13 +30,9 @@ skinparam sequence {
   NoteFontSize            12
 }
 
-' ═══════════════════════════════════════════════════
-' PARTICIPANTS — matches visual diagram 2
-' 7 lifelines: BillPanel, BillingController, Facade,
-'              RentalManager, BillingManager,
-'              Bill.Builder, DataStore
-' ═══════════════════════════════════════════════════
+actor "Staff/Admin" as Actor
 participant "BillPanel" as View <<view>>
+participant "Validator" as Val <<util>>
 participant "BillingController" as Ctrl <<controller>>
 participant "RentalSystemFacade" as Facade <<Facade>>
 participant "RentalManager" as RentMgr <<model>>
@@ -45,46 +41,58 @@ participant "PenaltyRule" as Rule <<interface>>
 participant "Bill.Builder" as Builder <<Builder>>
 participant "DataStore" as DS <<Singleton>>
 
-' ═══════════════════════════════════════════════════
-' MESSAGE FLOW — matches visual diagram 2
-' ═══════════════════════════════════════════════════
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
 
-' Step 1
-View -> Ctrl : onGenerateClick()
+Actor -> View : onGenerateClick()
 activate View
+
+' View input validation
+View -> Val : isNonEmpty(rentalId)
+activate Val
+Val --> View
+deactivate Val
+
+' View calls Controller
+View -> Ctrl : generateBill(rentalId)
 activate Ctrl
 
-' Step 2
+' Controller input validation
+Ctrl -> Val : isNonEmpty(rentalId)
+activate Val
+Val --> Ctrl
+deactivate Val
+
+' Controller calls Facade
 Ctrl -> Facade : generateBill(rentalId)
 activate Facade
 
-' Step 3 — Facade retrieves rental first
+' Facade retrieves rental first
 Facade -> RentMgr : findById(rentalId)
 activate RentMgr
 
-' alt: rental not found
-group alt [rental not found]
-  RentMgr --> Facade : return error
+alt rental not found
+  RentMgr --> Facade : return null
 end
 
-' Step 5
 RentMgr --> Facade : return rental
 deactivate RentMgr
 
 |||
-' Step 6
+' Facade delegates to BillingManager
 Facade -> BillMgr : generateBill(rental)
 activate BillMgr
 
-' Step 7 — BillingManager calculates components
-note over BillMgr : calculateBaseFee() = equipment.dailyRate × days
+' Calculate components
+note over BillMgr : calculateBaseFee() = equipment.dailyRate * days
+note over BillMgr : user.getDiscountRate() applied to base fee
 
-' Step 8
-note over BillMgr : user.getDiscountRate()\napply to base fee
-
-' Step 9 — Retrieve rules and calculate penalties
+' Retrieve penalty strategies
 BillMgr -> RentMgr : getPenaltyRules()
+activate RentMgr
 RentMgr --> BillMgr : return rules
+deactivate RentMgr
 
 loop for each PenaltyRule rule in rules
   BillMgr -> Rule : computePenalty(rental)
@@ -95,7 +103,7 @@ loop for each PenaltyRule rule in rules
 end
 
 |||
-' ── Builder block (Steps 10–14) ─────────────────
+' Builder block
 BillMgr -> Builder : new Builder(billId, rentalId)
 activate Builder
 
@@ -104,33 +112,28 @@ BillMgr -> Builder : .discountAmount(disc)
 BillMgr -> Builder : .latePenalty(latePenalty)
 BillMgr -> Builder : .damagePenalty(damagePenalty)
 
-' Step 14
 BillMgr -> Builder : .build()
 Builder --> BillMgr : return Bill
 deactivate Builder
 
 |||
-' Step 16 — persist bill via Singleton
-BillMgr -> DS : DataStore.getInstance()\n.saveBill()
+' Persist bill
+BillMgr -> DS : saveBill()
 activate DS
-note over DS : write to JSON
 DS --> BillMgr : saved
 deactivate DS
 
-' Step 17
 BillMgr --> Facade : return bill
 deactivate BillMgr
 
-' Step 18
 Facade --> Ctrl : return bill
 deactivate Facade
 
-' Step 19
 Ctrl --> View : return bill
 deactivate Ctrl
 
-' Step 20
 note over View : displayBill(bill)\nshow breakdown:\nbase fee, discount,\npenalty, net payable
+View --> Actor : render itemized bill breakdown
 deactivate View
 
 @enduml
