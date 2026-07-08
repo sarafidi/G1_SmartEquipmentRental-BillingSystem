@@ -49,20 +49,27 @@ public class BillingManager {
         double discount = pricing.applyDiscount(rental.getUser(), baseFee);
 
         // 2. fetch penalties from RentalManager rules context calculate penalties
-        double totalPenalty = 0.0;
+        double latePenalty = 0.0;
+        double damagePenalty = 0.0;
         List<PenaltyRule> rules = (rentalManager != null)
                 ? rentalManager.getPenaltyRules()
                 : new ArrayList<>();
 
         for (PenaltyRule rule : rules) {
-            totalPenalty += rule.computePenalty(rental);
+            double penalty = rule.computePenalty(rental);
+            if (rule instanceof model.strategy.LatePenalty) {
+                latePenalty += penalty;
+            } else if (rule instanceof model.strategy.DamagePenalty) {
+                damagePenalty += penalty;
+            }
         }
 
         // construct using Builder pattern
         Bill bill = new Bill.Builder(billId, rental.getRentalId())
                 .baseRentalFee(baseFee)
                 .discountAmount(discount)
-                .penaltyAmount(totalPenalty)
+                .latePenalty(latePenalty)
+                .damagePenalty(damagePenalty)
                 .build();
         bills.add(bill);
         instance.saveBill();

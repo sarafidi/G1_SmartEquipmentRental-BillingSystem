@@ -6,6 +6,7 @@ skinparam maxMessageSize 200
 skinparam roundcorner 8
 skinparam shadowing false
 skinparam stereotypePosition bottom
+skinparam ParticipantPadding 40
 
 skinparam participant {
   BackgroundColor #FAFAFA
@@ -16,17 +17,17 @@ skinparam participant {
 
 skinparam sequence {
   ArrowColor              #444441
-  ArrowFontSize           11
+  ArrowFontSize           12
   ArrowFontColor          #333333
   LifeLineBorderColor     #AAAAAA
   LifeLineBackgroundColor #F5F5F5
   GroupBackgroundColor    #EAF4FB
   GroupBorderColor        #3B8BD4
   GroupFontColor          #0C447C
-  GroupFontSize           11
+  GroupFontSize           12
   NoteBackgroundColor     #FFF8E8
   NoteBorderColor         #AAAAAA
-  NoteFontSize            11
+  NoteFontSize            12
 }
 
 ' ═══════════════════════════════════════════════════
@@ -35,26 +36,12 @@ skinparam sequence {
 '              Facade, EquipmentManager,
 '              Equipment (new obj), DataStore
 ' ═══════════════════════════════════════════════════
-box "src/view" #EAF4FB
-  participant "EquipmentPanel" as View <<view>>
-end box
-
-box "src/controller" #EAF7EA
-  participant "EquipmentController" as Ctrl <<controller>>
-end box
-
-box "Design Pattern: Facade" #E3EEF9
-  participant "RentalSystemFacade" as Facade <<Facade>>
-  participant "EquipmentManager" as EqMgr <<model>>
-end box
-
-box "src/model — Equipment" #F5F0FA
-  participant "Electronics/Media/Lab\nEquipment (new)" as EqObj <<domain obj>>
-end box
-
-box "src/util" #F0F0FF
-  participant "DataStore" as DS <<Singleton>>
-end box
+participant "EquipmentPanel" as View <<view>>
+participant "EquipmentController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "EquipmentManager" as EqMgr <<model>>
+participant "Electronics/Media/Lab\nEquipment (new)" as EqObj <<domain obj>>
+participant "DataStore" as DS <<Singleton>>
 
 ' ═══════════════════════════════════════════════════
 ' MESSAGE FLOW — matches visual diagram 4

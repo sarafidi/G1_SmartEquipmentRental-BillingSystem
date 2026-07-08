@@ -167,11 +167,23 @@ public class BillPanel extends JPanel {
 
         // penalty calculation
         if (bill.getPenaltyAmount() > 0) {
-            sb.append(String.format("\n<b>%-20s +RM %9.2f</b>%n", "Total Penalties", bill.getPenaltyAmount()));
+            sb.append(String.format("<b>%-20s +RM %9.2f</b>%n", "Total Penalties", bill.getPenaltyAmount()));
             Rental rental = controller.findRentalById(bill.getRentalId());
             if (rental != null) {
-                double lateFee = controller.getLateFee(rental);
-                double damageFee = controller.getDamageFee(rental);
+                double lateFee = bill.getLatePenalty();
+                double damageFee = bill.getDamagePenalty();
+                
+                // if this is a legacy bill with no saved itemized penalties
+                if (lateFee == 0.0 && damageFee == 0.0) {
+                    java.time.LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : java.time.LocalDate.now();
+                    if (end.isAfter(rental.getDueDate())) {
+                        long lateDays = java.time.temporal.ChronoUnit.DAYS.between(rental.getDueDate(), end);
+                        lateFee = lateDays * 10.00;
+                    }
+                    if ("Damaged".equalsIgnoreCase(rental.getCondition())) {
+                        damageFee = rental.getEquipment().getDailyRate() * 1.5;
+                    }
+                }
                 
                 if (lateFee > 0) {
                     sb.append(String.format("  - Late Return Fee : +RM %9.2f%n", lateFee));

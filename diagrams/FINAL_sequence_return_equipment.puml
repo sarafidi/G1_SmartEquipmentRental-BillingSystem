@@ -6,6 +6,7 @@ skinparam maxMessageSize 200
 skinparam roundcorner 8
 skinparam shadowing false
 skinparam stereotypePosition bottom
+skinparam ParticipantPadding 40
 
 skinparam participant {
   BackgroundColor #FAFAFA
@@ -16,17 +17,17 @@ skinparam participant {
 
 skinparam sequence {
   ArrowColor              #444441
-  ArrowFontSize           11
+  ArrowFontSize           12
   ArrowFontColor          #333333
   LifeLineBorderColor     #AAAAAA
   LifeLineBackgroundColor #F5F5F5
   GroupBackgroundColor    #EAF4FB
   GroupBorderColor        #3B8BD4
   GroupFontColor          #0C447C
-  GroupFontSize           11
+  GroupFontSize           12
   NoteBackgroundColor     #FFF8E8
   NoteBorderColor         #AAAAAA
-  NoteFontSize            11
+  NoteFontSize            12
 }
 
 ' ═══════════════════════════════════════════════════
@@ -34,116 +35,76 @@ skinparam sequence {
 ' 6 lifelines: RentalPanel, RentalController, Facade,
 '              RentalManager, PenaltyRule, DataStore
 ' ═══════════════════════════════════════════════════
-box "src/view" #EAF4FB
-  participant "RentalPanel" as View <<view>>
-end box
-
-box "src/controller" #EAF7EA
-  participant "RentalController" as Ctrl <<controller>>
-end box
-
-box "Design Pattern: Facade" #E3EEF9
-  participant "RentalSystemFacade" as Facade <<Facade>>
-  participant "RentalManager" as RentMgr <<model>>
-end box
-
-box "src/model — Strategies" #FDF5E6
-  participant "PenaltyRule\n(Late/Damage)" as Penalty <<interface>>
-end box
-
-box "src/util" #F0F0FF
-  participant "DataStore" as DS <<Singleton>>
-end box
+participant "RentalPanel" as View <<view>>
+participant "RentalController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "RentalManager" as RentMgr <<model>>
+participant "BillingManager" as BillMgr <<model>>
+participant "PenaltyRule" as Rule <<interface>>
+participant "DataStore" as DS <<Singleton>>
 
 ' ═══════════════════════════════════════════════════
 ' MESSAGE FLOW — matches visual diagram 3
 ' ═══════════════════════════════════════════════════
 
 ' Step 1
-View -> Ctrl : onReturnClick(rentalId, condition)
+View -> Ctrl : onReturnClick()
 activate View
 activate Ctrl
+
+' Security validation checks
+note over Ctrl : Validate logged-in user.\nIf STUDENT, verify they\nown this rental record.
 
 ' Step 2
 Ctrl -> Facade : returnEquipment(rentalId, condition)
 activate Facade
 
-' alt: invalid input
-group alt [invalid input]
-  Ctrl --> View : show validation error
-end
-
-' Step 3
+' Step 3 — Facade closes transaction in RentalManager
 Facade -> RentMgr : closeRental(rentalId, condition)
 activate RentMgr
 
-' Step 4 — find rental
-note over RentMgr : findById(rentalId)
+' Step 4 — RentalManager updates states
+RentMgr -> RentMgr : findById(rentalId)
+note over RentMgr : setReturnDate(LocalDate.now())\nsetCondition(condition)\nsetStatus(RETURNED)
+note over RentMgr : Set associated Equipment available = true
 
-' alt: rental not found
-group alt [rental not found]
-  RentMgr --> Facade : return error
-end
-
-' Step 5
-note over RentMgr : rental.setReturnDate(today)
-
-' Step 6
-note over RentMgr : rental.isOverdue()
-
-' ── alt: overdue OR damaged ──────────────────────
-group alt [overdue OR condition = damaged]
-
-  ' Step 7
-  RentMgr -> Penalty : computePenalty(rental)
-  activate Penalty
-
-  ' Step 8
-  note over Penalty : lateDays × penaltyRatePerDay\nOR\ndamageMultiplier × dailyRate
-
-  ' Step 9
-  Penalty --> RentMgr : return penaltyAmt
-  deactivate Penalty
-|||
-else [on time and good condition]
-  note over RentMgr : penaltyAmt = 0.0
-end
-
-' Step 10
-note over RentMgr : rental.setStatus(RETURNED)
-
-' Step 11
-RentMgr -> Facade : equipment.setAvailable(true)
-
-' Step 12 — persist rentals
-RentMgr -> DS : DataStore.getInstance().saveRentals(rentals)
+' Step 5 — Save model changes
+RentMgr -> DS : saveRental()
 activate DS
-note over DS : write to JSON
 DS --> RentMgr : saved
 deactivate DS
-|||
 
-' Step 14 — persist equipment
-Facade -> DS : DataStore.getInstance().saveEquipment(list)
+RentMgr -> DS : saveEquipment()
 activate DS
-note over DS : write to JSON
-DS --> Facade : saved
+DS --> RentMgr : saved
 deactivate DS
 
-' Step 15
 RentMgr --> Facade : return rental
 deactivate RentMgr
 
-' Step 16
-Facade --> Ctrl : return rental
+|||
+' Step 6 — Facade triggers auto bill generation
+Facade -> BillMgr : generateBill(rental)
+activate BillMgr
+
+' Step 7 — BillingManager calculates and builds
+note over BillMgr : Calculate baseFee, discount, and penalties
+BillMgr -> DS : saveBill()
+activate DS
+DS --> BillMgr : saved
+deactivate DS
+
+BillMgr --> Facade : return bill
+deactivate BillMgr
+
+|||
+Facade --> Ctrl : return done
 deactivate Facade
 
-' Step 17
-Ctrl --> View : return rental
+Ctrl --> View : success
 deactivate Ctrl
 
-' Step 18
-note over View : refreshTable()\nshow penalty summary
+note over View : refreshTable()\nShow message box "Success"
 deactivate View
 
 @enduml

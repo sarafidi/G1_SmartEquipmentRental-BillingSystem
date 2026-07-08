@@ -35,7 +35,7 @@ public class Rental {
         3. prevents NullPointerException
     */
     public boolean isOverdue() {
-        if (status == RentalStatus.RETURNED || status == RentalStatus.CANCELLED) {
+        if (status == RentalStatus.CANCELLED) {
             return false;
         }
         LocalDate dateToCheck = (returnDate != null) ? returnDate : LocalDate.now();
@@ -78,7 +78,7 @@ public class Rental {
         return returnDate;
     }
     public RentalStatus getStatus() {
-        return status;
+        return this.status;
     }
     public String getCondition() {
         return condition;
