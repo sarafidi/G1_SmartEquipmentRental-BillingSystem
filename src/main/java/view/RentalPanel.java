@@ -203,8 +203,15 @@ public class RentalPanel extends JPanel {
         tableModel.setRowCount(0);
 
         try {
-            // Fetch active rentals from controller and populate table
-            List<Rental> activeRentals = controller.listAllRentals();
+            // Fetch active rentals based on user role and populate table
+            model.user.User loggedInUser = util.SessionManager.getInstance().getCurrentUser();
+            List<Rental> activeRentals;
+            if (loggedInUser.getUserType() == model.UserType.ADMIN || loggedInUser.getUserType() == model.UserType.STAFF) {
+                activeRentals = controller.listAllRentals();
+            } else {
+                activeRentals = controller.getUserRentals(loggedInUser.getUserId());
+            }
+
             for (Rental rental : activeRentals) {
                 Object[] rowData = {
                     rental.getRentalId(),

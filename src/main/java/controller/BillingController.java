@@ -4,18 +4,42 @@ import model.RentalSystemFacade;
 import model.bill.Bill;
 import model.rental.Rental;
 import model.user.User;
+import model.RentalStatus;
+import model.UserType;
+import model.strategy.LatePenalty;
+import model.strategy.DamagePenalty;
 import util.Validator;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
 public class BillingController {
     private final RentalSystemFacade facade = RentalSystemFacade.getInstance();
 
+    public double getLateFee(Rental rental) {
+        return new LatePenalty(10.00).computePenalty(rental);
+    }
+
+    public double getDamageFee(Rental rental) {
+        return new DamagePenalty().computePenalty(rental);
+    }
+
     public Bill generateBill(String rentalId) {
         if (!Validator.isNonEmpty(rentalId)) {
             throw new IllegalArgumentException("Please enter a Rental ID.");
         }
+        
+        // Security Check: Students can only view/generate bills for their own rentals
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != UserType.ADMIN && loggedInUser.getUserType() != UserType.STAFF) {
+            Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                throw new IllegalArgumentException("Access Denied: You can only view bills for your own rentals.");
+            }
+        }
+        
         return facade.generateBill(rentalId);
     }
 
@@ -23,6 +47,16 @@ public class BillingController {
         if (!Validator.isNonEmpty(rentalId)) {
             return null;
         }
+        
+        // Security Check: Students can only search for their own bills
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != UserType.ADMIN && loggedInUser.getUserType() != UserType.STAFF) {
+            Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                return null;
+            }
+        }
+        
         return facade.findBillByRental(rentalId);
     }
 
