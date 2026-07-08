@@ -8,6 +8,8 @@ public class Bill {
     private final double baseRentalFee;
     private final double discountAmount;
     private final double penaltyAmount;
+    private final double latePenalty;
+    private final double damagePenalty;
     private final double netPayable;
     private final LocalDate billDate;
 
@@ -20,8 +22,10 @@ public class Bill {
         this.rentalId = builder.rentalId;
         this.baseRentalFee = builder.baseRentalFee;
         this.discountAmount = builder.discountAmount;
-        this.penaltyAmount = builder.penaltyAmount;
-        this.netPayable = Math.max(0.0, builder.baseRentalFee - builder.discountAmount + builder.penaltyAmount);
+        this.latePenalty = builder.latePenalty;
+        this.damagePenalty = builder.damagePenalty;
+        this.penaltyAmount = builder.latePenalty + builder.damagePenalty;
+        this.netPayable = Math.max(0.0, builder.baseRentalFee - builder.discountAmount + this.penaltyAmount);
         this.billDate = LocalDate.now();
     }
 
@@ -32,8 +36,6 @@ public class Bill {
     public double computeNet() {
         return Math.max(0.0, baseRentalFee - discountAmount + penaltyAmount);
     }
-
-    // getters
 
     public String getBillId() {
         return billId;
@@ -50,6 +52,12 @@ public class Bill {
     public double getPenaltyAmount() {
         return penaltyAmount;
     }
+    public double getLatePenalty() {
+        return latePenalty;
+    }
+    public double getDamagePenalty() {
+        return damagePenalty;
+    }
     public double getNetPayable() {
         return netPayable;
     }
@@ -65,7 +73,8 @@ public class Bill {
         private final String rentalId;
         private double baseRentalFee;
         private double discountAmount = 0.0;
-        private double penaltyAmount = 0.0;
+        private double latePenalty = 0.0;
+        private double damagePenalty = 0.0;
 
         public Builder(String billId, String rentalId) {
             this.billId = billId;
@@ -82,8 +91,13 @@ public class Bill {
             return this;
         }
 
-        public Builder penaltyAmount(double penaltyAmount) {
-            this.penaltyAmount = penaltyAmount;
+        public Builder latePenalty(double latePenalty) {
+            this.latePenalty = latePenalty;
+            return this;
+        }
+
+        public Builder damagePenalty(double damagePenalty) {
+            this.damagePenalty = damagePenalty;
             return this;
         }
 

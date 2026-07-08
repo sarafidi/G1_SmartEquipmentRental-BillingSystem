@@ -1,6 +1,5 @@
 package util;
 
-// called by view panels before passing anything to controller
 // protects the system from bad inputs
 public class Validator {
     public static boolean isNonEmpty(String value) {

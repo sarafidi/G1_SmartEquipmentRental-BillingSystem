@@ -1,0 +1,28 @@
+[
+  {
+    "warrantyMonths": 24,
+    "equipmentId": "EQ-0001",
+    "name": "Dell UltraSharp Monitor",
+    "category": "Electronics",
+    "dailyRate": 15.0,
+    "available": true
+  },
+  {
+    "requiresDeposit": true,
+    "depositAmount": 100.0,
+    "equipmentId": "EQ-0002",
+    "name": "Rode Wireless GO Mic",
+    "category": "Media",
+    "dailyRate": 25.0,
+    "available": true
+  },
+  {
+    "hazardLevel": 3,
+    "requiresCertificate": true,
+    "equipmentId": "EQ-0003",
+    "name": "Spectrophotometer",
+    "category": "Lab",
+    "dailyRate": 80.0,
+    "available": true
+  }
+]

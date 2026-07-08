@@ -1,0 +1,68 @@
+[
+  {
+    "billId": "BL-0001",
+    "rentalId": "RN-0001",
+    "baseRentalFee": 15.0,
+    "discountAmount": 0.0,
+    "penaltyAmount": 0.0,
+    "latePenalty": 0.0,
+    "damagePenalty": 0.0,
+    "netPayable": 15.0,
+    "billDate": "2026-07-08"
+  },
+  {
+    "billId": "BL-0002",
+    "rentalId": "RN-0003",
+    "baseRentalFee": 15.0,
+    "discountAmount": 0.0,
+    "penaltyAmount": 22.5,
+    "latePenalty": 0.0,
+    "damagePenalty": 22.5,
+    "netPayable": 37.5,
+    "billDate": "2026-07-08"
+  },
+  {
+    "billId": "BL-0003",
+    "rentalId": "RN-0002",
+    "baseRentalFee": 125.0,
+    "discountAmount": 18.75,
+    "penaltyAmount": 47.5,
+    "latePenalty": 10.0,
+    "damagePenalty": 37.5,
+    "netPayable": 153.75,
+    "billDate": "2026-07-08"
+  },
+  {
+    "billId": "BL-0004",
+    "rentalId": "RN-0004",
+    "baseRentalFee": 15.0,
+    "discountAmount": 0.0,
+    "penaltyAmount": 10.0,
+    "latePenalty": 10.0,
+    "damagePenalty": 0.0,
+    "netPayable": 25.0,
+    "billDate": "2026-07-08"
+  },
+  {
+    "billId": "BL-0005",
+    "rentalId": "RN-0005",
+    "baseRentalFee": 130.0,
+    "discountAmount": 26.0,
+    "penaltyAmount": 140.0,
+    "latePenalty": 20.0,
+    "damagePenalty": 120.0,
+    "netPayable": 244.0,
+    "billDate": "2026-07-08"
+  },
+  {
+    "billId": "BL-0006",
+    "rentalId": "RN-0006",
+    "baseRentalFee": 610.0,
+    "discountAmount": 122.0,
+    "penaltyAmount": 160.0,
+    "latePenalty": 40.0,
+    "damagePenalty": 120.0,
+    "netPayable": 648.0,
+    "billDate": "2026-07-08"
+  }
+]

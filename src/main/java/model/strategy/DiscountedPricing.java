@@ -11,6 +11,6 @@ public class DiscountedPricing implements PricingStrategy {
 
     @Override
     public double applyDiscount(User user, double fee) {
-        return fee * user.getDiscountRate();    // uses User's discount rate (Student = 10-20%, Staff = 15%)
+        return fee * user.getDiscountRate();    // uses User's discount rate (Final Year Student = 10%, Staff = 15%)
     }
 }

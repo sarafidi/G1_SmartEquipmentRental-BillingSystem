@@ -3,6 +3,8 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.print.PrinterException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,19 +30,15 @@ import model.rental.Rental;
 public class BillPanel extends JPanel {
     private final BillingController controller = new BillingController();
 
-    // Generate / lookup bar 
     private JTextField rentalIdField;
 
-    // Receipt display
     private JTextPane billArea;
 
-    // Bill history table 
     private JTable historyTable;
     private DefaultTableModel historyModel;
     private List<Bill> currentHistory = new ArrayList<>();
     private Bill activeBill;
 
-    // Constructor 
     public BillPanel() {
         setLayout(new BorderLayout(0, 5));
         buildTopBar();
@@ -48,7 +46,6 @@ public class BillPanel extends JPanel {
         refreshHistory();
     }
 
-    // Generate / View bar
     private void buildTopBar() {
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -167,11 +164,23 @@ public class BillPanel extends JPanel {
 
         // penalty calculation
         if (bill.getPenaltyAmount() > 0) {
-            sb.append(String.format("\n<b>%-20s +RM %9.2f</b>%n", "Total Penalties", bill.getPenaltyAmount()));
+            sb.append(String.format("<b>%-20s +RM %9.2f</b>%n", "Total Penalties", bill.getPenaltyAmount()));
             Rental rental = controller.findRentalById(bill.getRentalId());
             if (rental != null) {
-                double lateFee = controller.getLateFee(rental);
-                double damageFee = controller.getDamageFee(rental);
+                double lateFee = bill.getLatePenalty();
+                double damageFee = bill.getDamagePenalty();
+                
+                // if this is a legacy bill with no saved itemized penalties
+                if (lateFee == 0.0 && damageFee == 0.0) {
+                    LocalDate end = (rental.getReturnDate() != null) ? rental.getReturnDate() : LocalDate.now();
+                    if (end.isAfter(rental.getDueDate())) {
+                        long lateDays = ChronoUnit.DAYS.between(rental.getDueDate(), end);
+                        lateFee = lateDays * 10.00;
+                    }
+                    if ("Damaged".equalsIgnoreCase(rental.getCondition())) {
+                        damageFee = rental.getEquipment().getDailyRate() * 1.5;
+                    }
+                }
                 
                 if (lateFee > 0) {
                     sb.append(String.format("  - Late Return Fee : +RM %9.2f%n", lateFee));

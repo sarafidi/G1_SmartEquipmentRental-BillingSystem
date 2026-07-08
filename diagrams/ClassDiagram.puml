@@ -11,11 +11,12 @@ skinparam classStereotypeFontSize 10
 skinparam roundcorner 8
 skinparam linetype ortho
 skinparam shadowing false
-skinparam NodeSep 150
-skinparam RankSep 200
+skinparam NodeSep 250
+skinparam RankSep 300
 skinparam BoxPadding 15
 skinparam ParticipantPadding 20
 skinparam wrapWidth 300
+hide circle
 
 skinparam class {
   BackgroundColor #FAFAFA
@@ -25,38 +26,39 @@ skinparam class {
   AttributeFontColor #333333
 }
 
-skinparam package {
-  BackgroundColor #F5F5F5
-  BorderColor     #AAAAAA
-  FontColor       #333333
-  FontStyle       bold
+skinparam package<<HiddenLayout>> {
+    borderColor transparent
+    backgroundColor transparent
+    fontColor transparent
+    stereotypeFontColor transparent
 }
+
 
 ' ═══════════════════════════════════════════════════
 ' ENUMERATIONS
 ' ═══════════════════════════════════════════════════
-package "Enumerations" #FFF8E8 {
-
   enum RentalStatus {
     ACTIVE
     RETURNED
     OVERDUE
     CANCELLED
   }
-
   enum UserType {
     STUDENT
     FINAL_YEAR_STUDENT
     STAFF
     ADMIN
   }
+package "Enumerations" <<HiddenLayout>> {
+
+
 
 }
 
 ' ═══════════════════════════════════════════════════
 ' VIEW LAYER  [src/view]
 ' ═══════════════════════════════════════════════════
-package "src/view" #EAF4FB {
+package "src/view" <<HiddenLayout>> {
 
   class MainFrame <<view>> {
     -&#160; equipmentPanel(): EquipmentPanel
@@ -113,7 +115,7 @@ package "src/view" #EAF4FB {
     +&#160; displayBill(): void
     +&#160; refreshHistory(): void
   }
-
+  
   class ReportPanel <<view>> {
     -&#160; {static} controller: ReportController
     --
@@ -125,7 +127,7 @@ package "src/view" #EAF4FB {
 ' ═══════════════════════════════════════════════════
 ' CONTROLLER LAYER  [src/controller]
 ' ═══════════════════════════════════════════════════
-package "src/controller" #EAF7EA {
+package "src/controller" <<HiddenLayout>> {
 
   class EquipmentController {
     -&#160; facade: RentalSystemFacade
@@ -193,7 +195,7 @@ package "src/controller" #EAF7EA {
 ' ═══════════════════════════════════════════════════
 ' DESIGN PATTERN 1: FAÇADE  [src/model]
 ' ═══════════════════════════════════════════════════
-package "Design Pattern: Facade" #E3EEF9 {
+package "Design Pattern: Facade" as facade <<HiddenLayout>> {
 
   class RentalSystemFacade <<Facade>> {
     -&#160; {static} instance: RentalSystemFacade
@@ -209,7 +211,7 @@ package "Design Pattern: Facade" #E3EEF9 {
     +&#160; cancelRental(rentalId: String): void
     +&#160; registerUser(name: String, email: String, rawPassword: String, userType: String, additional: String): String
     +&#160; login(userId: String, password: String): User
-    +&#160; logout(): void
+    +&#160; logout(): void 
     +&#160; getCurrentUser(): User
     +&#160; getOverdueRentals(): List<Rental>
     +&#160; getTotalRevenue(): double
@@ -273,7 +275,7 @@ package "Design Pattern: Facade" #E3EEF9 {
 ' ═══════════════════════════════════════════════════
 ' DOMAIN — EQUIPMENT HIERARCHY  [src/model]
 ' ═══════════════════════════════════════════════════
-package "src/model — Equipment" #F5F0FA {
+package "src/model — Equipment" <<HiddenLayout>> {
 
   abstract class Equipment <<abstract>> {
     -&#160; equipmentId: String {final}
@@ -310,7 +312,7 @@ package "src/model — Equipment" #F5F0FA {
 ' ═══════════════════════════════════════════════════
 ' DOMAIN — USER HIERARCHY  [src/model]
 ' ═══════════════════════════════════════════════════
-package "src/model — User" #FFF0F0 {
+package "src/model — User" <<HiddenLayout>> {
 
   abstract class User <<abstract>> {
     -&#160; userId: String {final}
@@ -348,7 +350,7 @@ package "src/model — User" #FFF0F0 {
 ' ═══════════════════════════════════════════════════
 ' DOMAIN — RENTAL & BILL  [src/model]
 ' ═══════════════════════════════════════════════════
-package "                                                     src/model — Rental & Billing" #F0FAF0 {
+package "src/model — Rental & Billing" as rental <<HiddenLayout>> {
   class Rental {
     -&#160; rentalId: String {final}
     -&#160; user: User {final}
@@ -376,11 +378,15 @@ package "                                                     src/model — Rent
     -&#160; baseRentalFee: double {final}
     -&#160; discountAmount: double {final}
     -&#160; penaltyAmount: double {final}
+    -&#160; latePenalty: double {final}
+    -&#160; damagePenalty: double {final}
     -&#160; netPayable: double {final}
     -&#160; billDate: LocalDate {final}
     --
     -&#160; Bill(builder: Builder)
     +&#160; computeNet(): double
+    +&#160; getLatePenalty(): double
+    +&#160; getDamagePenalty(): double
   }
 
   class "Builder" as BillBuilder {
@@ -388,12 +394,14 @@ package "                                                     src/model — Rent
     -&#160; rentalId: String {final}
     -&#160; baseRentalFee: double
     -&#160; discountAmount: double = 0.0
-    -&#160; penaltyAmount: double = 0.0
+    -&#160; latePenalty: double = 0.0
+    -&#160; damagePenalty: double = 0.0
     --
-    +&#160; {static} Builder(rentalId: String, billId: String)
+    +&#160; Builder(billId: String, rentalId: String)
     +&#160; baseRentalFee(baseRentalFee: double): Builder
     +&#160; discountAmount(discountAmount: double): Builder
-    +&#160; penaltyAmount(penaltyAmount: double): Builder
+    +&#160; latePenalty(latePenalty: double): Builder
+    +&#160; damagePenalty(damagePenalty: double): Builder
     +&#160; build(): Bill
   }
 
@@ -402,7 +410,7 @@ package "                                                     src/model — Rent
 ' ═══════════════════════════════════════════════════
 ' PRICING & PENALTY STRATEGIES  [src/model]
 ' ═══════════════════════════════════════════════════
-package "src/model — Strategies" #FDF5E6 {
+package "src/model — Strategies" as strategy <<HiddenLayout>> {
 
   interface PricingStrategy <<interface>> {
     +&#160; calculateFee(equipment: Equipment, days: int): double
@@ -444,7 +452,7 @@ package "src/model — Strategies" #FDF5E6 {
 ' ═══════════════════════════════════════════════════
 ' DESIGN PATTERN 2: SINGLETON +&#160; UTIL  [src/util]
 ' ═══════════════════════════════════════════════════
-package "src/util" #F0F0FF {
+package "src/util" <<HiddenLayout>> {
 
   class DataStore <<Singleton>> {
     -&#160; {static} instance: DataStore
@@ -467,31 +475,6 @@ package "src/util" #F0F0FF {
     +&#160; saveBill(): void
   }
 
-  class Validator {
-    --
-    +&#160; {static} isValidEmail(s: String): boolean
-    +&#160; {static} isPositive(n: double): boolean
-    +&#160; {static} isValidDays(days: int): boolean
-    +&#160; {static} passwordsMatch(p1: String, p2: String): boolean
-  }
-
-  class HashUtil {
-    --
-    +&#160; {static} sha256(input: String): String
-    +&#160; {static} verify(rawInput: String, storedHash: String): boolean
-  }
-
-  class IDGenerator {
-    --
-    -&#160; {static} extractMaxNumeric(ids: ArrayList<String>): int
-    +&#160; {static} generateUserId(): String
-    +&#160; {static} generateStudentId(): String
-    +&#160; {static} generateStaffId(): String
-    +&#160; {static} generateEquipmentId(): String
-    +&#160; {static} generateRentalId(): String
-    +&#160; {static} generateBillId(): String
-  }
-
   class SessionManager {
     -&#160; {static} instance: SessionManager
     -&#160; currentUser: User
@@ -508,71 +491,53 @@ package "src/util" #F0F0FF {
 ' RELATIONSHIPS
 ' ═══════════════════════════════════════════════════
 
-' ── view → controller (dependency) ─────────────────
-EquipmentPanel       ..>  EquipmentController
-RentalPanel          ..>  RentalController
-BillPanel            ..>  BillingController
-LoginDialog          ..>  UserController
-UserPanel            ..>  UserController
-ReportPanel          ..>  ReportController
+' ── view → controller (association) ─────────────────
+EquipmentPanel       "1  " --> "1  "  EquipmentController : controller
+RentalPanel          "1  " --> "1  "  RentalController : controller
+BillPanel            "1  " --> "1  "  BillingController : controller
+LoginDialog          "1  " --> "1  "  UserController : userController
+UserPanel            "1  " --> "1  "  UserController : controller
+ReportPanel          "1  " --> "1  "  ReportController : controller
 
 ' MainFrame composes the panels (composition)
-MainFrame "1" *-- "1" EquipmentPanel
-MainFrame "1" *-- "1" RentalPanel
-MainFrame "1" *-- "1" BillPanel
-MainFrame "1" *-- "1" UserPanel
-MainFrame "1" *-- "1" ReportPanel
+MainFrame "1  " *-- "1  " EquipmentPanel
+MainFrame "1  " *-- "1  " RentalPanel
+MainFrame "1  " *-- "1  " BillPanel
+MainFrame "1  " *-- "1  " UserPanel
+MainFrame "1  " *-- "1  " ReportPanel
 
 ' MainFrame launches LoginDialog (dependency)
-MainFrame ..> LoginDialog
+MainFrame ..> LoginDialog : <<instantiates>>
 
 ' ── controller → facade (association) ──────────────
-EquipmentController "1" --> "1" RentalSystemFacade
-RentalController    "1" --> "1" RentalSystemFacade
-BillingController    "1" --> "1" RentalSystemFacade
-UserController       "1" --> "1" RentalSystemFacade
+EquipmentController "1  " --> "1  " RentalSystemFacade : facade
+RentalController    "1  " --> "1  " RentalSystemFacade : facade
+BillingController    "1  " --> "1  " RentalSystemFacade : facade
+UserController       "1  " --> "1  " RentalSystemFacade : facade
+ReportController     "1  " --> "1  " RentalSystemFacade : facade
 
-' controllers use Validator (dependency)
-RentalController    ..>  Validator
-EquipmentController ..>  Validator
-UserController       ..>  Validator
-BillingController    ..>  Validator
 
-' controllers use domain entities (dependency)
-EquipmentController ..> Equipment
-RentalController    ..> Rental
-RentalController    ..> User
-BillingController   ..> Bill
-BillingController   ..> Rental
-UserController      ..> User
-ReportController    ..> Bill
-ReportController    ..> Rental
-
-' BillingController uses concrete strategies for fee breakdowns (dependency)
-BillingController   ..> LatePenalty
-BillingController   ..> DamagePenalty
-
-' ── facade → managers (dependency) ─────────────────
-RentalSystemFacade ..> EquipmentManager
-RentalSystemFacade ..> RentalManager
-RentalSystemFacade ..> BillingManager
-RentalSystemFacade ..> UserManager
+' ── facade → managers (association) ─────────────────
+RentalSystemFacade "1  " --> "1  " EquipmentManager
+RentalSystemFacade "1  " --> "1  " RentalManager
+RentalSystemFacade "1  " --> "1  " BillingManager
+RentalSystemFacade "1  " --> "1  " UserManager
 
 ' ── managers → domain (aggregation) ────────────────
-EquipmentManager "1" o-- "0..*" Equipment
-RentalManager    "1" o-- "0..*" Rental
-BillingManager   "1" o-- "0..*" Bill
-UserManager      "1" o-- "0..*" User
+EquipmentManager "1      " o--down--- "0..*  " Equipment
+RentalManager    "1  " o--down-- "0..*  " Rental
+BillingManager   "1  " o--down-- "0..*  " Bill
+UserManager      "1  " o--down-- "0..*  " User
 
-' ── managers → DataStore Singleton (dependency) ────
-EquipmentManager ..> DataStore
-RentalManager    ..> DataStore
-BillingManager   ..> DataStore
-UserManager      ..> DataStore
+' ── managers → DataStore Singleton (association/dependency) ────
+EquipmentManager ..> DataStore : <<uses>>
+RentalManager    "1\n    " --> "1\n   " DataStore
+BillingManager   "1  " --> "1  " DataStore : instance
+UserManager      "1  " --> "     1" DataStore : "instance\n\n\n"
 
-' ── RentalManager → strategies (dependency) ────────
-RentalManager "1" ..> "1"    PricingStrategy
-RentalManager "1" ...> "0..*" PenaltyRule
+' ── RentalManager → strategies (association) ────────
+RentalManager "1  " ---> "1  "    PricingStrategy : pricingStrategy
+RentalManager "1  " --> "0..*  " PenaltyRule     : "\n\npenaltyRules"
 
 ' ── Equipment hierarchy (inheritance) ──────────────
 Equipment <|-- ElectronicsEquipment : extends
@@ -592,13 +557,13 @@ PenaltyRule <|.. DamagePenalty
 
 ' ── Domain associations & multiplicities ───────────
 ' A user can have many rentals (aggregation)
-User      "1"  o--  "0..*"  Rental
+User      "1  "  o--  "0..*  "  Rental
 
 ' An equipment item can appear in many rentals (association)
-Equipment "1"  ---   "0..*"  Rental
+Equipment "1  "  ---   "0..*  "  Rental
 
 ' A rental owns exactly one bill (composition)
-Rental    "1"  *-left-  "1"     Bill
+Rental    "1  "  *-left-  "1  "     Bill
 
 ' Builder creates Bill
 BillBuilder ..> Bill : <<creates>>
@@ -608,4 +573,17 @@ Bill        +-- BillBuilder
 Rental .up.> RentalStatus
 User   .up.> UserType
 
+' ── SessionManager relationships (association/dependency) ────
+SessionManager "1  " --> "0..1" User : "currentUser  "
+MainFrame      ..> SessionManager  : "<<uses>>  "
+UserController ..> SessionManager  : "<<uses>>  "
+
+' ── Layout positioning rules ─────────────────────────
+rental -[hidden]left- facade
+"src/util" -[hidden]right- facade
+RentalStatus -[hidden]right- Rental
+UserManager -[hidden]down- User
+
+'ElectronicsEquipment -[hidden]down- MediaEquipment
+'MediaEquipment -[hidden]down- LabEquipment
 @enduml

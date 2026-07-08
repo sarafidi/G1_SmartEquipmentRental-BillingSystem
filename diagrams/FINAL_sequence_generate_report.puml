@@ -1,0 +1,130 @@
+@startuml GenerateReport
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam stereotypePosition bottom
+skinparam ParticipantPadding 40
+
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
+
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           12
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           12
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            12
+}
+
+actor "Admin" as Actor
+participant "ReportPanel" as View <<view>>
+participant "ReportController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "EquipmentManager" as EqMgr <<model>>
+participant "RentalManager" as RentMgr <<model>>
+participant "BillingManager" as BillMgr <<model>>
+
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
+
+Actor -> View : onDownloadClick()
+activate View
+
+note over View : Show JFileChooser dialog
+alt File approved to save
+  View -> Ctrl : buildCsvReport()
+  activate Ctrl
+
+' 1. Query Equipment Counts
+Ctrl -> Facade : listAllEquipment()
+activate Facade
+Facade -> EqMgr : listAll()
+activate EqMgr
+EqMgr --> Facade : return equipmentList
+deactivate EqMgr
+Facade --> Ctrl : return equipmentList
+deactivate Facade
+
+|||
+Ctrl -> Facade : listAvailableEquipment()
+activate Facade
+Facade -> EqMgr : listAvailable()
+activate EqMgr
+EqMgr --> Facade : return availableList
+deactivate EqMgr
+Facade --> Ctrl : return availableList
+deactivate Facade
+
+|||
+' 2. Query Rentals Count
+Ctrl -> Facade : listAllRentals()
+activate Facade
+Facade -> RentMgr : listAll()
+activate RentMgr
+RentMgr --> Facade : return rentalsList
+deactivate RentMgr
+Facade --> Ctrl : return rentalsList
+deactivate Facade
+
+|||
+' 3. Query Revenue from Billing Manager
+Ctrl -> Facade : getTotalRevenue()
+activate Facade
+Facade -> BillMgr : listAll()
+activate BillMgr
+BillMgr --> Facade : return billsList
+deactivate BillMgr
+note over Facade : stream bills and sum Bill.getNetPayable()
+Facade --> Ctrl : return totalRevenue
+deactivate Facade
+
+|||
+' 4. Query Overdue Rentals
+Ctrl -> Facade : getOverdueRentals()
+activate Facade
+Facade -> RentMgr : listAll()
+activate RentMgr
+RentMgr --> Facade : return rentalsList
+deactivate RentMgr
+note over Facade : filter rentals where Rental.isOverdue() is true
+Facade --> Ctrl : return overdueList
+deactivate Facade
+
+|||
+' 5. Query All Bills detail
+Ctrl -> Facade : listAllBills()
+activate Facade
+Facade -> BillMgr : listAll()
+activate BillMgr
+BillMgr --> Facade : return billsList
+deactivate BillMgr
+Facade --> Ctrl : return billsList
+deactivate Facade
+
+|||
+' 6. Compile and return CSV string
+note over Ctrl : Parse collected data fields\nand format into a CSV string.
+Ctrl --> View : return csvString
+deactivate Ctrl
+
+note over View : Save file using FileWriter\nand update lastUpdatedLabel
+View --> Actor : show success popup dialog
+end
+deactivate View
+
+@enduml

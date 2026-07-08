@@ -14,7 +14,7 @@ public class LabEquipment extends Equipment {
     public double calculateRentalFee(int days) {
         double base = getDailyRate() * days;
         if (hazardLevel > 2) {
-            base += 50.00; // flat safety handling surcharge
+            base += 50.00; // flat safety handling price charge
         }
         return base;
     }

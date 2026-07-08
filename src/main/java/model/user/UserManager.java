@@ -20,16 +20,13 @@ public class UserManager {
     }
 
     public User createUser(String name, String email, String rawPassword, String userType, String additional) {
-        // Generate IDs
         String userId = IDGenerator.generateUserId();
         String cardId = userType.equals("Student")
                 ? IDGenerator.generateStudentId()
                 : IDGenerator.generateStaffId();
 
-        // Hash password
         String hashedPassword = util.HashUtil.sha256(rawPassword);
 
-        // Create user object
         User newUser;
         if (userType.equals("Student")) {
             try {
@@ -46,7 +43,6 @@ public class UserManager {
             newUser = new Staff(userId, name, email, hashedPassword, cardId, additional);
         }
 
-        // Add user
         addUser(newUser);
         return newUser;
     }

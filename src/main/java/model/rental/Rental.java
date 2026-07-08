@@ -15,7 +15,7 @@ public class Rental {
     private final LocalDate dueDate;
     private LocalDate returnDate;   // can be null if item not return yet
     private RentalStatus status;
-    private String condition;       // condition upon return "Excellent", "Damaged", etc
+    private String condition;
 
     public Rental(String rentalId, User user, Equipment equipment, LocalDate startDate, int daysRequested) {
         this.rentalId = rentalId;
@@ -35,7 +35,7 @@ public class Rental {
         3. prevents NullPointerException
     */
     public boolean isOverdue() {
-        if (status == RentalStatus.RETURNED || status == RentalStatus.CANCELLED) {
+        if (status == RentalStatus.CANCELLED) {
             return false;
         }
         LocalDate dateToCheck = (returnDate != null) ? returnDate : LocalDate.now();
@@ -78,7 +78,7 @@ public class Rental {
         return returnDate;
     }
     public RentalStatus getStatus() {
-        return status;
+        return this.status;
     }
     public String getCondition() {
         return condition;
