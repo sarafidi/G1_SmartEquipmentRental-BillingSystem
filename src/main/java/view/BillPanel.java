@@ -156,7 +156,8 @@ public class BillPanel extends JPanel {
         if (rentalForBase != null && rentalForBase.getEquipment() instanceof LabEquipment lab) {
             if (lab.getHazardLevel() > 2) {
                 double rawFee = lab.getDailyRate() * rentalForBase.getDaysRented();
-                sb.append(String.format("  - Daily Rental (%dd) :  RM %10.2f%n", rentalForBase.getDaysRented(), rawFee));
+                sb.append(String.format("  - Daily Rental      :  RM %10.2f%n", rawFee));
+                sb.append(String.format("    (RM%.2f × %dd)%n", lab.getDailyRate(), rentalForBase.getDaysRented()));
                 sb.append(String.format("  - Lab Safety Surchg :  RM %10.2f%n", 50.00));
             }
         }
