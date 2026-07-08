@@ -1,0 +1,53 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ranksep 50
+skinparam nodesep 60
+
+actor "User" as usr
+actor "Student" as st
+actor "Staff" as sf
+actor "Admin" as ad
+
+' Actor inheritance
+usr <|-- st
+usr <|-- sf
+sf <|-- ad
+
+rectangle "Smart Equipment Rental & Billing System" {
+  usecase "Login" as uc_login
+  usecase "Browse/Search Equipment" as uc_browse
+  usecase "Rent Equipment" as uc_rent
+  usecase "Return Equipment" as uc_return
+  usecase "Cancel Rental" as uc_cancel
+  usecase "Generate / View Bill" as uc_bill
+  
+  usecase "Manage Equipment" as uc_manage_eq
+  usecase "Manage Users" as uc_manage_usr
+  usecase "Generate Reports" as uc_reports
+  
+  usecase "Apply Discount" as uc_discount
+  usecase "Apply Penalty" as uc_penalty
+  usecase "Calculate Rental Fee" as uc_calc_fee
+}
+
+' Common User interactions
+usr -- uc_login
+usr -- uc_browse
+usr -- uc_rent
+usr -- uc_return
+usr -- uc_cancel
+usr -- uc_bill
+
+' Admin-specific interactions
+ad -- uc_manage_eq
+ad -- uc_manage_usr
+ad -- uc_reports
+
+' Includes and Extends
+uc_bill ..> uc_calc_fee : <<include>>
+uc_discount ..> uc_bill : <<extend>>
+uc_penalty ..> uc_bill : <<extend>>
+
+@enduml

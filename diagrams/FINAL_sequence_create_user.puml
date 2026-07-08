@@ -1,0 +1,136 @@
+@startuml CreateUser
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam stereotypePosition bottom
+skinparam ParticipantPadding 40
+
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
+
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           12
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           12
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            12
+}
+
+actor "Admin" as Actor
+participant "UserPanel" as View <<view>>
+participant "UserController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "UserManager" as UserMgr <<model>>
+participant "HashUtil" as Hash <<util>>
+participant "Student/Staff" as UserObj <<domain obj>>
+participant "IDGenerator" as IDGen <<util>>
+participant "DataStore" as DS <<Singleton>>
+
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
+
+Actor -> View : onAddClick()
+activate View
+
+note over View : Validate fields and password length\n(isValidEmail, check empty)
+
+View -> Ctrl : addUser(name, email, password, userType, additional)
+activate Ctrl
+
+' Controller Security Check
+note over Ctrl : Validate input formats\n(isValidEmail, etc.)
+
+Ctrl -> Facade : registerUser(name, email, password, userType, additional)
+activate Facade
+
+Facade -> UserMgr : createUser(name, email, password, userType, additional)
+activate UserMgr
+
+' ID Generation
+UserMgr -> IDGen : generateUserId()
+activate IDGen
+IDGen --> UserMgr : return userId
+deactivate IDGen
+
+alt userType is Student
+  UserMgr -> IDGen : generateStudentId()
+  activate IDGen
+  IDGen --> UserMgr : return cardId
+  deactivate IDGen
+else userType is Staff
+  UserMgr -> IDGen : generateStaffId()
+  activate IDGen
+  IDGen --> UserMgr : return cardId
+  deactivate IDGen
+end
+
+' Password Hashing
+UserMgr -> Hash : sha256(password)
+activate Hash
+Hash --> UserMgr : return hashedPassword
+deactivate Hash
+
+' Dynamic Subclass Initialization based on Role/UserType
+alt userType is Student
+  UserMgr -> UserObj : new Student(userId, name, email, hashedPassword, cardId, year)
+  activate UserObj
+  UserObj --> UserMgr : return Student object
+  deactivate UserObj
+else userType is Staff
+  UserMgr -> UserObj : new Staff(userId, name, email, hashedPassword, cardId, department)
+  activate UserObj
+  UserObj --> UserMgr : return Staff object
+  deactivate UserObj
+end
+
+' Persist changes
+UserMgr -> DS : saveUsers()
+activate DS
+DS --> UserMgr : saved
+deactivate DS
+
+UserMgr --> Facade : return newUser
+deactivate UserMgr
+
+Facade --> Ctrl : return userId
+deactivate Facade
+
+Ctrl --> View : return userId
+deactivate Ctrl
+
+View -> View : refreshTable()
+activate View
+View -> Ctrl : listAll()
+activate Ctrl
+Ctrl -> Facade : listAll()
+activate Facade
+Facade -> UserMgr : listAll()
+activate UserMgr
+UserMgr --> Facade : return usersList
+deactivate UserMgr
+Facade --> Ctrl : return usersList
+deactivate Facade
+Ctrl --> View : return usersList
+deactivate Ctrl
+deactivate View
+
+note over View : Show success popup message\nand clear fields
+View --> Actor : show success popup dialog
+deactivate View
+
+@enduml
