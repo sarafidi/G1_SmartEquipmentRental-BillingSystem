@@ -16,6 +16,16 @@ public class BillingController {
         if (!Validator.isNonEmpty(rentalId)) {
             throw new IllegalArgumentException("Please enter a Rental ID.");
         }
+        
+        // Security Check: Students can only view/generate bills for their own rentals
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != model.UserType.ADMIN && loggedInUser.getUserType() != model.UserType.STAFF) {
+            model.rental.Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                throw new IllegalArgumentException("Access Denied: You can only view bills for your own rentals.");
+            }
+        }
+        
         return facade.generateBill(rentalId);
     }
 
@@ -23,6 +33,16 @@ public class BillingController {
         if (!Validator.isNonEmpty(rentalId)) {
             return null;
         }
+        
+        // Security Check: Students can only search for their own bills
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != model.UserType.ADMIN && loggedInUser.getUserType() != model.UserType.STAFF) {
+            model.rental.Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                return null;
+            }
+        }
+        
         return facade.findBillByRental(rentalId);
     }
 

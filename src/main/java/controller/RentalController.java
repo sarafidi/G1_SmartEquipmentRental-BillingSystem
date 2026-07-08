@@ -31,10 +31,33 @@ public class RentalController {
         if (!Validator.isNonEmpty(rentalId) || !Validator.isNonEmpty(condition)) {
             throw new IllegalArgumentException("Rental ID and equipment condition cannot be empty.");
         }
+        
+        // students can only return their own rentals
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != UserType.ADMIN && loggedInUser.getUserType() != UserType.STAFF) {
+            Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                throw new IllegalArgumentException("Access Denied: You can only return your own rentals.");
+            }
+        }
+        
         facade.returnEquipment(rentalId, condition);
     }
 
     public void cancelRental(String rentalId) {
+        if (!Validator.isNonEmpty(rentalId)) {
+            throw new IllegalArgumentException("Rental ID cannot be empty.");
+        }
+        
+        // Security Check: Students can only cancel their own rentals
+        User loggedInUser = facade.getCurrentUser();
+        if (loggedInUser.getUserType() != UserType.ADMIN && loggedInUser.getUserType() != UserType.STAFF) {
+            Rental rental = facade.findRentalById(rentalId);
+            if (rental != null && !rental.getUser().getUserId().equalsIgnoreCase(loggedInUser.getUserId())) {
+                throw new IllegalArgumentException("Access Denied: You can only cancel your own rentals.");
+            }
+        }
+        
         facade.cancelRental(rentalId);
     }
 

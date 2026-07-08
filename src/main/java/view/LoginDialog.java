@@ -85,7 +85,7 @@ public class LoginDialog extends JDialog {
         JButton loginButton = new JButton("Login");
         JButton exitButton = new JButton("Exit");
         // TODO: DELETE THIS BEFORE SUBMIT!!!!!!
-        userIdField.setText("USR-001");
+        userIdField.setText("USR-0001");
         passwordField.setText("admin123");
 
         // Login button action
