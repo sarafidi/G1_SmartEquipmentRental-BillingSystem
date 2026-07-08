@@ -1,0 +1,81 @@
+@startuml CancelRental
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam stereotypePosition bottom
+skinparam ParticipantPadding 40
+
+skinparam participant {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  FontColor       #1A1A1A
+  FontSize        12
+}
+
+skinparam sequence {
+  ArrowColor              #444441
+  ArrowFontSize           12
+  ArrowFontColor          #333333
+  LifeLineBorderColor     #AAAAAA
+  LifeLineBackgroundColor #F5F5F5
+  GroupBackgroundColor    #EAF4FB
+  GroupBorderColor        #3B8BD4
+  GroupFontColor          #0C447C
+  GroupFontSize           12
+  NoteBackgroundColor     #FFF8E8
+  NoteBorderColor         #AAAAAA
+  NoteFontSize            12
+}
+
+participant "RentalPanel" as View <<view>>
+participant "RentalController" as Ctrl <<controller>>
+participant "RentalSystemFacade" as Facade <<Facade>>
+participant "RentalManager" as RentMgr <<model>>
+participant "DataStore" as DS <<Singleton>>
+
+' ===================================================
+' MESSAGE FLOW
+' ===================================================
+
+View -> Ctrl : cancelRental(rentalId)
+activate View
+activate Ctrl
+
+' Controller Security Check
+note over Ctrl : Validate logged-in user.\nIf STUDENT, verify they\nown this rental record.
+
+Ctrl -> Facade : cancelRental(rentalId)
+activate Facade
+
+Facade -> RentMgr : cancelRental(rentalId)
+activate RentMgr
+
+RentMgr -> RentMgr : findById(rentalId)
+note over RentMgr : Set status to CANCELLED.\nMake associated Equipment\navailable in inventory.
+
+RentMgr -> DS : saveRental()
+activate DS
+DS --> RentMgr : saved
+deactivate DS
+
+RentMgr -> DS : saveEquipment()
+activate DS
+DS --> RentMgr : saved
+deactivate DS
+
+RentMgr --> Facade : done
+deactivate RentMgr
+
+Facade --> Ctrl : done
+deactivate Facade
+
+Ctrl --> View : success
+deactivate Ctrl
+
+note over View : refreshTable()\nShow message box "Success"
+deactivate View
+
+@enduml

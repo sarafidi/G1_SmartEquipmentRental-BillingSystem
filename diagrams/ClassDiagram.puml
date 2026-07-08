@@ -1,0 +1,589 @@
+@startuml SmartEquipmentRentalSystem
+
+' ═══════════════════════════════════════════════════
+' SKIN & STYLE
+' ═══════════════════════════════════════════════════
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam classFontSize 13
+skinparam classAttributeFontSize 11
+skinparam classStereotypeFontSize 10
+skinparam roundcorner 8
+skinparam linetype ortho
+skinparam shadowing false
+skinparam NodeSep 250
+skinparam RankSep 300
+skinparam BoxPadding 15
+skinparam ParticipantPadding 20
+skinparam wrapWidth 300
+hide circle
+
+skinparam class {
+  BackgroundColor #FAFAFA
+  BorderColor     #888888
+  HeaderBackgroundColor #E8EDF2
+  FontColor       #1A1A1A
+  AttributeFontColor #333333
+}
+
+skinparam package<<HiddenLayout>> {
+    borderColor transparent
+    backgroundColor transparent
+    fontColor transparent
+    stereotypeFontColor transparent
+}
+
+
+' ═══════════════════════════════════════════════════
+' ENUMERATIONS
+' ═══════════════════════════════════════════════════
+  enum RentalStatus {
+    ACTIVE
+    RETURNED
+    OVERDUE
+    CANCELLED
+  }
+  enum UserType {
+    STUDENT
+    FINAL_YEAR_STUDENT
+    STAFF
+    ADMIN
+  }
+package "Enumerations" <<HiddenLayout>> {
+
+
+
+}
+
+' ═══════════════════════════════════════════════════
+' VIEW LAYER  [src/view]
+' ═══════════════════════════════════════════════════
+package "src/view" <<HiddenLayout>> {
+
+  class MainFrame <<view>> {
+    -&#160; equipmentPanel(): EquipmentPanel
+    -&#160; rentalPanel(): RentalPanel
+    -&#160; billPanel(): BillPanel
+    -&#160; userPanel(): UserPanel
+    -&#160; reportPanel(): ReportPanel
+    --
+    +&#160; <<create>> MainFrame()
+  }
+
+  class LoginDialog <<view>> {
+    -&#160; userController: UserController {final}
+    -&#160; loginSuccess: boolean
+    --
+    +&#160; <<create>> LoginDialog(parent: JFrame)
+    +&#160; isLoginSuccess(): boolean
+  }
+
+  class UserPanel <<view>> {
+    -&#160; controller: UserController {final}
+    --
+    +&#160; <<create>> UserPanel()
+  }
+
+  class EquipmentPanel <<view>> {
+    -&#160; controller: EquipmentController {final}
+    -&#160; equipmentTable: JTable
+    -&#160; searchField: JTextField
+    --
+    +&#160; <<create>> EquipmentPanel()
+    +&#160; refreshTable(): void
+    +&#160; onSearchClick(): void
+  }
+
+  class RentalPanel <<view>> {
+    -&#160; controller: RentalController {final}
+    --
+    +&#160; <<create>> RentalPanel()
+    +&#160; onRentClick(): void
+    +&#160; onReturnClick(): void
+    +&#160; refreshTable(): void
+    +&#160; onCancelClick(): void
+  }
+
+  class BillPanel <<view>> {
+    -&#160; controller: BillingController {final}
+    -&#160; currentHistory: List<Bill>
+    -&#160; activeBill: Bill
+    --
+    +&#160; <<create>> BillPanel()
+    +&#160; onGenerateClick(): void
+    +&#160; onHistoryRowSelected(): void
+    +&#160; displayBill(): void
+    +&#160; refreshHistory(): void
+  }
+  
+  class ReportPanel <<view>> {
+    -&#160; {static} controller: ReportController
+    --
+    +&#160; <<create>> ReportPanel()
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' CONTROLLER LAYER  [src/controller]
+' ═══════════════════════════════════════════════════
+package "src/controller" <<HiddenLayout>> {
+
+  class EquipmentController {
+    -&#160; facade: RentalSystemFacade
+    --
+    +&#160; addEquipment(equipment: Equipment)
+    +&#160; removeEquipment(id: String): void
+    +&#160; findEquipmentById(id: String): Equipment
+    +&#160; listAvailableEquipment(): List<Equipment>
+    +&#160; listAllEquipment(): List<Equipment>
+    +&#160; isCurrentUserAdmin(): boolean
+  }
+
+  class RentalController {
+    -&#160; facade: RentalSystemFacade
+    --
+    +&#160; handleRent(userId: String, equipId: String, days: int)
+    +&#160; handleReturn(rentalId: String, condition: String)
+    +&#160; handleListRentals(): List
+    +&#160; getCurrentUserId(): String
+    +&#160; rentEquipment(userId: String, equipmentId: String, days: int): Rental
+    +&#160; returnEquipment(rentalId: String, condition: String): void
+    +&#160; cancelRental(rentalId: String): void
+    +&#160; findRentalById(id, String): Rental
+    +&#160; getUserRentals(userId: String): List<Rental>
+    +&#160; listAllRentals(): List<Rental>
+    +&#160; getCurrentUserId(): String
+  }
+
+  class BillingController {
+    -&#160; facade: RentalSystemFacade
+    --
+    +&#160; generateBill(rentalId: String): Bill
+    +&#160; findBillByRental(rentalId: String): Bill
+    +&#160; getBillHistory(userId: String): List<Bill>
+    +&#160; getCurrentUserId(): String
+  }
+
+  class UserController {
+    -&#160; facade: RentalSystemFacade
+    --
+    +&#160; login(userId: String, password: String): User
+    +&#160; logout()
+    +&#160; addUser(name: String, email: String, rawPassword: String, userType: String, additional: String): void
+    +&#160; removeUser(id: String): void
+    +&#160; updateUser(id: String, newName: String, newEmail: String): void
+    +&#160; findById(id: String): User
+    +&#160; listAll(): List<User>
+    +&#160; getCurrentUser(): User
+  }
+
+  class ReportController {
+    -&#160; facade: RentalSystemFacade
+    --
+    +&#160; getAllBills(): List<Bill>
+    +&#160; getOverdueRentals(): List<Rental>
+    +&#160; getTotalRevenue(): double
+    +&#160; getTotalEquipmentCount(): int
+    +&#160; getAvailableEquipmentCount(): int
+    +&#160; getTotalRentalCount(): int
+    +&#160; buildCsvReport(): String
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' DESIGN PATTERN 1: FAÇADE  [src/model]
+' ═══════════════════════════════════════════════════
+package "Design Pattern: Facade" as facade <<HiddenLayout>> {
+
+  class RentalSystemFacade <<Facade>> {
+    -&#160; {static} instance: RentalSystemFacade
+    -&#160; equipmentMgr: EquipmentManager
+    -&#160; rentalMgr: RentalManager
+    -&#160; billingMgr: BillingManager
+    -&#160; userManager: UserManager
+    --
+    -&#160; <<create>> RentalSystemFacade()
+    +&#160; {static} getInstance(): RentalSystemFacade
+    +&#160; rentEquipment(userId: String, equipmentId: String, days: int): Rental
+    +&#160; returnEquipment(rentalId: String, condition: String): void
+    +&#160; cancelRental(rentalId: String): void
+    +&#160; registerUser(name: String, email: String, rawPassword: String, userType: String, additional: String): String
+    +&#160; login(userId: String, password: String): User
+    +&#160; logout(): void 
+    +&#160; getCurrentUser(): User
+    +&#160; getOverdueRentals(): List<Rental>
+    +&#160; getTotalRevenue(): double
+  }
+
+  class EquipmentManager {
+    -&#160; equipmentList: List<Equipment>
+    --
+    +&#160; <<create>> EquipmentManager()
+    +&#160; findById(id: String): Equipment
+    +&#160; addEquipment(e: Equipment): void
+    +&#160; removeEquipment(id: String): void
+    +&#160; listAvailable(): List<Equipment>
+    +&#160; listAll(): List<Equipment>
+  }
+
+  class RentalManager {
+    -&#160; rentals: List<Rental>
+    -&#160; pricingStrategy: PricingStrategy
+    -&#160; penaltyRules: List<PenaltyRule>
+    -&#160; instance: DataStore {final}
+    --
+    +&#160; <<create>> RentalManager(initialStrategy: PricingStrategy, initialRules: List<PenaltyRule>)
+    +&#160; createRental(user: User, equipment: Equipment, days: int): Rental
+    +&#160; closeRental(id: String, condition: String): Rental
+    +&#160; cancelRental(id: String): void
+    +&#160; findById(id: String): Rental
+    +&#160; getRentalsByUser(userId: String): List<Rental>
+    +&#160; listAll(): List<Rental>
+  }
+
+  class BillingManager {
+    -&#160; bills: List<Bill>
+    -&#160; rentalManager: RentalManager
+    -&#160; instance: DataStore {final}
+    --
+    +&#160; <<create>> BillingManager()
+    +&#160; generateBill(rental: Rental): Bill
+    +&#160; findBillByRental(rentalId: String): Bill
+    +&#160; getBillHistory(userId: String): List<Bill>
+    -&#160; findRentalForBill(rentalId: String): Rental
+    +&#160; listAll(): List<Bill>
+  }
+
+  class UserManager {
+    -&#160; users: List<User>
+    -&#160; instance: DataStore {final}
+    --
+    +&#160; <<create>> UserManager()
+    +&#160; addUser(u: User): void
+    +&#160; createUser(name: String, email: String, rawPassword: String, userType: String, additional: String): String
+    +&#160; removeUser(id: String): void
+    +&#160; updateUser(userId: String, newName: String, newEmail: String): void
+    +&#160; findById(id: String): User
+    +&#160; listAll(): List<User>
+    +&#160; authenticate(userId: String, password: String): User
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' DOMAIN — EQUIPMENT HIERARCHY  [src/model]
+' ═══════════════════════════════════════════════════
+package "src/model — Equipment" <<HiddenLayout>> {
+
+  abstract class Equipment <<abstract>> {
+    -&#160; equipmentId: String {final}
+    -&#160; name: String {final}
+    -&#160; category: String {final}
+    -&#160; dailyRate: double {final}
+    -&#160; available: boolean
+    --
+    +&#160; {abstract} calculateRentalFee(days: int): double
+  }
+
+  class ElectronicsEquipment {
+    -&#160; warrantyMonths: int
+    --
+    +&#160; calculateRentalFee(days: int): double
+  }
+
+  class MediaEquipment {
+    -&#160; requiresDeposit: boolean
+    -&#160; depositAmount: double
+    --
+    +&#160; calculateRentalFee(days: int): double
+  }
+
+  class LabEquipment {
+    -&#160; hazardLevel: int
+    -&#160; requiresCertification: boolean
+    --
+    +&#160; calculateRentalFee(days: int): double
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' DOMAIN — USER HIERARCHY  [src/model]
+' ═══════════════════════════════════════════════════
+package "src/model — User" <<HiddenLayout>> {
+
+  abstract class User <<abstract>> {
+    -&#160; userId: String {final}
+    -&#160; name: String
+    -&#160; email: String
+    -&#160; password: String
+    -&#160; userType: UserType {final}
+    --
+    +&#160; {abstract} getDiscountRate(): double
+    +&#160; {abstract} getCardId(): String
+    +&#160; checkPassword(rawPassword: String): boolean
+  }
+
+  class Student {
+    -&#160; studentId: String
+    -&#160; yearOfStudy: int
+    --
+    +&#160; <<create>> Student(userId: String, name: String, email: String, password: String, studentId: String, yearOfStudy: int)
+    +&#160; getDiscountRate(): double
+    +&#160; isFinalYear(): boolean
+    +&#160; getCardId(): String
+  }
+
+  class Staff {
+    -&#160; staffId: String
+    -&#160; department: String
+    --
+    +&#160; <<create>> Staff(userId : String, name : String, email : String, password : String, staffId : String, department : String, userType : UserType)
+    +&#160; getDiscountRate(): double
+    +&#160; getCardId(): String
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' DOMAIN — RENTAL & BILL  [src/model]
+' ═══════════════════════════════════════════════════
+package "src/model — Rental & Billing" as rental <<HiddenLayout>> {
+  class Rental {
+    -&#160; rentalId: String {final}
+    -&#160; user: User {final}
+    -&#160; equipment: Equipment {final}
+    -&#160; startDate: LocalDate {final}
+    -&#160; dueDate: LocalDate {final}
+    -&#160; returnDate: LocalDate
+    -&#160; status: RentalStatus
+    -&#160; condition: String
+    --
+    +&#160; <<create>> Rental(rentalId: String, user: User, equipment: Equipment, startDate: LocalDate, daysRequested: int)
+    +&#160; isOverdue(): boolean
+    +&#160; getDaysRented(): int
+    +&#160; getDaysOverdue(): int
+  }
+
+  ' ─────────────────────────────────────────────────
+  ' DESIGN PATTERN 3: BUILDER applied to Bill
+  ' Bill has many optional fields (discount, penalty)
+  ' Builder constructs it step by step cleanly
+  ' ─────────────────────────────────────────────────
+  class Bill <<Builder>> {
+    -&#160; billId: String {final}
+    -&#160; rentalId: String {final}
+    -&#160; baseRentalFee: double {final}
+    -&#160; discountAmount: double {final}
+    -&#160; penaltyAmount: double {final}
+    -&#160; latePenalty: double {final}
+    -&#160; damagePenalty: double {final}
+    -&#160; netPayable: double {final}
+    -&#160; billDate: LocalDate {final}
+    --
+    -&#160; Bill(builder: Builder)
+    +&#160; computeNet(): double
+    +&#160; getLatePenalty(): double
+    +&#160; getDamagePenalty(): double
+  }
+
+  class "Builder" as BillBuilder {
+    -&#160; billId: String {final}
+    -&#160; rentalId: String {final}
+    -&#160; baseRentalFee: double
+    -&#160; discountAmount: double = 0.0
+    -&#160; latePenalty: double = 0.0
+    -&#160; damagePenalty: double = 0.0
+    --
+    +&#160; Builder(billId: String, rentalId: String)
+    +&#160; baseRentalFee(baseRentalFee: double): Builder
+    +&#160; discountAmount(discountAmount: double): Builder
+    +&#160; latePenalty(latePenalty: double): Builder
+    +&#160; damagePenalty(damagePenalty: double): Builder
+    +&#160; build(): Bill
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' PRICING & PENALTY STRATEGIES  [src/model]
+' ═══════════════════════════════════════════════════
+package "src/model — Strategies" as strategy <<HiddenLayout>> {
+
+  interface PricingStrategy <<interface>> {
+    +&#160; calculateFee(equipment: Equipment, days: int): double
+    +&#160; applyDiscount(user: User, fee: double): double
+  }
+
+  interface PenaltyRule <<interface>> {
+    +&#160; computePenalty(rental: Rental): double
+    +&#160; getRuleDescription(): String
+  }
+
+  class StandardPricing {
+    --
+    +&#160; calculateFee(equipment: Equipment, days: int): double
+    +&#160; applyDiscount(user: User, fee: double): double
+  }
+
+  class DiscountedPricing {
+    --
+    +&#160; calculateFee(equipment: Equipment, days: int): double
+    +&#160; applyDiscount(user: User, fee: double): double
+  }
+
+  class LatePenalty {
+    -&#160; penaltyRatePerDay: double {final}
+    --
+    +&#160; computePenalty(rental: Rental): double
+    +&#160; getRuleDescription(): String
+  }
+
+  class DamagePenalty {
+    --
+    +&#160; computePenalty(rental: Rental): double
+    +&#160; getRuleDescription(): String
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' DESIGN PATTERN 2: SINGLETON +&#160; UTIL  [src/util]
+' ═══════════════════════════════════════════════════
+package "src/util" <<HiddenLayout>> {
+
+  class DataStore <<Singleton>> {
+    -&#160; {static} instance: DataStore
+    -&#160; users: ArrayList<User>
+    -&#160; equipments: ArrayList<Equipment>
+    -&#160; rentals: ArrayList<Rental>
+    -&#160; bills: ArrayList<Bill>
+    --
+    -&#160; <<create>> DataStore()
+    +&#160; {static} getInstance(): DataStore
+    +&#160; init(): void
+    +&#160; verifyOrCreateFile(path: String, list: Object): void
+    +&#160; getUsers(): ArrayList<User>
+    +&#160; getEquipments(): ArrayList<Equipment>
+    +&#160; getRentals(): ArrayList<Rental>
+    +&#160; getBills(): ArrayList<Bill>
+    +&#160; saveUsers(): void
+    +&#160; saveEquipment(): void
+    +&#160; saveRental(): void
+    +&#160; saveBill(): void
+  }
+
+  class SessionManager {
+    -&#160; {static} instance: SessionManager
+    -&#160; currentUser: User
+    --
+    +&#160; {static} getInstance(): SessionManager
+    +&#160; getCurrentUser(): User
+    +&#160; isLoggedIn(): boolean
+    +&#160; clearSession(): void
+  }
+
+}
+
+' ═══════════════════════════════════════════════════
+' RELATIONSHIPS
+' ═══════════════════════════════════════════════════
+
+' ── view → controller (association) ─────────────────
+EquipmentPanel       "1  " --> "1  "  EquipmentController : controller
+RentalPanel          "1  " --> "1  "  RentalController : controller
+BillPanel            "1  " --> "1  "  BillingController : controller
+LoginDialog          "1  " --> "1  "  UserController : userController
+UserPanel            "1  " --> "1  "  UserController : controller
+ReportPanel          "1  " --> "1  "  ReportController : controller
+
+' MainFrame composes the panels (composition)
+MainFrame "1  " *-- "1  " EquipmentPanel
+MainFrame "1  " *-- "1  " RentalPanel
+MainFrame "1  " *-- "1  " BillPanel
+MainFrame "1  " *-- "1  " UserPanel
+MainFrame "1  " *-- "1  " ReportPanel
+
+' MainFrame launches LoginDialog (dependency)
+MainFrame ..> LoginDialog : <<instantiates>>
+
+' ── controller → facade (association) ──────────────
+EquipmentController "1  " --> "1  " RentalSystemFacade : facade
+RentalController    "1  " --> "1  " RentalSystemFacade : facade
+BillingController    "1  " --> "1  " RentalSystemFacade : facade
+UserController       "1  " --> "1  " RentalSystemFacade : facade
+ReportController     "1  " --> "1  " RentalSystemFacade : facade
+
+
+' ── facade → managers (association) ─────────────────
+RentalSystemFacade "1  " --> "1  " EquipmentManager
+RentalSystemFacade "1  " --> "1  " RentalManager
+RentalSystemFacade "1  " --> "1  " BillingManager
+RentalSystemFacade "1  " --> "1  " UserManager
+
+' ── managers → domain (aggregation) ────────────────
+EquipmentManager "1      " o--down--- "0..*  " Equipment
+RentalManager    "1  " o--down-- "0..*  " Rental
+BillingManager   "1  " o--down-- "0..*  " Bill
+UserManager      "1  " o--down-- "0..*  " User
+
+' ── managers → DataStore Singleton (association/dependency) ────
+EquipmentManager ..> DataStore : <<uses>>
+RentalManager    "1\n    " --> "1\n   " DataStore
+BillingManager   "1  " --> "1  " DataStore : instance
+UserManager      "1  " --> "     1" DataStore : "instance\n\n\n"
+
+' ── RentalManager → strategies (association) ────────
+RentalManager "1  " ---> "1  "    PricingStrategy : pricingStrategy
+RentalManager "1  " --> "0..*  " PenaltyRule     : "\n\npenaltyRules"
+
+' ── Equipment hierarchy (inheritance) ──────────────
+Equipment <|-- ElectronicsEquipment : extends
+Equipment <|-- MediaEquipment : extends
+Equipment <|-- LabEquipment : extends
+
+' ── User hierarchy (inheritance) ───────────────────
+User <|-- Student
+User <|-- Staff
+
+' ── Strategy realization ────────────────────────────
+PricingStrategy <|.. StandardPricing
+PricingStrategy <|.. DiscountedPricing
+
+PenaltyRule <|.. LatePenalty
+PenaltyRule <|.. DamagePenalty
+
+' ── Domain associations & multiplicities ───────────
+' A user can have many rentals (aggregation)
+User      "1  "  o--  "0..*  "  Rental
+
+' An equipment item can appear in many rentals (association)
+Equipment "1  "  ---   "0..*  "  Rental
+
+' A rental owns exactly one bill (composition)
+Rental    "1  "  *-left-  "1  "     Bill
+
+' Builder creates Bill
+BillBuilder ..> Bill : <<creates>>
+Bill        +-- BillBuilder
+
+' ── Enum usage (dependency) ─────────────────────────
+Rental .up.> RentalStatus
+User   .up.> UserType
+
+' ── SessionManager relationships (association/dependency) ────
+SessionManager "1  " --> "0..1" User : "currentUser  "
+MainFrame      ..> SessionManager  : "<<uses>>  "
+UserController ..> SessionManager  : "<<uses>>  "
+
+' ── Layout positioning rules ─────────────────────────
+rental -[hidden]left- facade
+"src/util" -[hidden]right- facade
+RentalStatus -[hidden]right- Rental
+UserManager -[hidden]down- User
+
+'ElectronicsEquipment -[hidden]down- MediaEquipment
+'MediaEquipment -[hidden]down- LabEquipment
+@enduml

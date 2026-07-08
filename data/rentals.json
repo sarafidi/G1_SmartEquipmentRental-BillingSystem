@@ -1,0 +1,167 @@
+[
+  {
+    "rentalId": "RN-0001",
+    "user": {
+      "studentId": "STD-0001",
+      "yearOfStudy": 2,
+      "userId": "USR-0002",
+      "name": "Alex Mercer",
+      "email": "alex.m@student.edu.my",
+      "password": "703b0a3d6ad75b649a28adde7d83c6251da457549263bc7ff45ec709b0a8448b",
+      "userType": "STUDENT",
+      "type": "Student"
+    },
+    "equipment": {
+      "warrantyMonths": 24,
+      "equipmentId": "EQ-0001",
+      "name": "Dell UltraSharp Monitor",
+      "category": "Electronics",
+      "dailyRate": 15.0,
+      "available": false,
+      "type": "ElectronicsEquipment"
+    },
+    "startDate": "2026-07-08",
+    "dueDate": "2026-07-13",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Excellent"
+  },
+  {
+    "rentalId": "RN-0002",
+    "user": {
+      "staffId": "STF-0002",
+      "department": "Computer Science",
+      "userId": "USR-0004",
+      "name": "Prof. Alan Turing",
+      "email": "alan.turing@staff.edu.my",
+      "password": "10176e7b7b24d317acfcf8d2064cfd2f24e154f7b5a96603077d5ef813d6a6b6",
+      "userType": "STAFF",
+      "type": "Staff"
+    },
+    "equipment": {
+      "requiresDeposit": true,
+      "depositAmount": 100.0,
+      "equipmentId": "EQ-0002",
+      "name": "Rode Wireless GO Mic",
+      "category": "Media",
+      "dailyRate": 25.0,
+      "available": false,
+      "type": "MediaEquipment"
+    },
+    "startDate": "2026-07-08",
+    "dueDate": "2026-07-07",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Damaged"
+  },
+  {
+    "rentalId": "RN-0003",
+    "user": {
+      "studentId": "STD-0001",
+      "yearOfStudy": 2,
+      "userId": "USR-0002",
+      "name": "Alex Mercer",
+      "email": "alex.m@student.edu.my",
+      "password": "703b0a3d6ad75b649a28adde7d83c6251da457549263bc7ff45ec709b0a8448b",
+      "userType": "STUDENT",
+      "type": "Student"
+    },
+    "equipment": {
+      "warrantyMonths": 24,
+      "equipmentId": "EQ-0001",
+      "name": "Dell UltraSharp Monitor",
+      "category": "Electronics",
+      "dailyRate": 15.0,
+      "available": true,
+      "type": "ElectronicsEquipment"
+    },
+    "startDate": "2026-07-08",
+    "dueDate": "2026-07-10",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Damaged"
+  },
+  {
+    "rentalId": "RN-0004",
+    "user": {
+      "studentId": "STD-0001",
+      "yearOfStudy": 2,
+      "userId": "USR-0002",
+      "name": "Alex Mercer",
+      "email": "alex.m@student.edu.my",
+      "password": "703b0a3d6ad75b649a28adde7d83c6251da457549263bc7ff45ec709b0a8448b",
+      "userType": "STUDENT",
+      "type": "Student"
+    },
+    "equipment": {
+      "warrantyMonths": 24,
+      "equipmentId": "EQ-0001",
+      "name": "Dell UltraSharp Monitor",
+      "category": "Electronics",
+      "dailyRate": 15.0,
+      "available": false,
+      "type": "ElectronicsEquipment"
+    },
+    "startDate": "2026-07-07",
+    "dueDate": "2026-07-07",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Excellent"
+  },
+  {
+    "rentalId": "RN-0005",
+    "user": {
+      "studentId": "STD-0002",
+      "yearOfStudy": 4,
+      "userId": "USR-0003",
+      "name": "Chloe Carter",
+      "email": "chloe.c@student.edu.my",
+      "password": "4349edb26bb041f4ec64bf736b6320e951002403c461c5df1a4705ef837b7106",
+      "userType": "FINAL_YEAR_STUDENT",
+      "type": "Student"
+    },
+    "equipment": {
+      "hazardLevel": 3,
+      "requiresCertificate": true,
+      "equipmentId": "EQ-0003",
+      "name": "Spectrophotometer",
+      "category": "Lab",
+      "dailyRate": 80.0,
+      "available": false,
+      "type": "LabEquipment"
+    },
+    "startDate": "2026-07-04",
+    "dueDate": "2026-07-06",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Damaged"
+  },
+  {
+    "rentalId": "RN-0006",
+    "user": {
+      "studentId": "STD-0002",
+      "yearOfStudy": 4,
+      "userId": "USR-0003",
+      "name": "Chloe Carter",
+      "email": "chloe.c@student.edu.my",
+      "password": "4349edb26bb041f4ec64bf736b6320e951002403c461c5df1a4705ef837b7106",
+      "userType": "FINAL_YEAR_STUDENT",
+      "type": "Student"
+    },
+    "equipment": {
+      "hazardLevel": 3,
+      "requiresCertificate": true,
+      "equipmentId": "EQ-0003",
+      "name": "Spectrophotometer",
+      "category": "Lab",
+      "dailyRate": 80.0,
+      "available": false,
+      "type": "LabEquipment"
+    },
+    "startDate": "2026-07-01",
+    "dueDate": "2026-07-04",
+    "returnDate": "2026-07-08",
+    "status": "RETURNED",
+    "condition": "Damaged"
+  }
+]
